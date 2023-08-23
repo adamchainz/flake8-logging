@@ -23,6 +23,13 @@ class Plugin:
 
 
 L001 = "L001 use logging.getLogger() to instantiate loggers"
+L002 = "L002 use __name__ with getLogger()"
+L002_names = frozenset(
+    (
+        "__cached__",
+        "__file__",
+    )
+)
 
 
 class Visitor(ast.NodeVisitor):
@@ -56,6 +63,26 @@ class Visitor(ast.NodeVisitor):
             and self._from_imports.get("Logger") == "logging"
         ):
             self.errors.append((node.lineno, node.col_offset, L001))
+
+        if (
+            (
+                self._logging_name
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "getLogger"
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == self._logging_name
+            )
+            or (
+                isinstance(node.func, ast.Name)
+                and node.func.id == "getLogger"
+                and self._from_imports.get("getLogger") == "logging"
+            )
+        ) and (
+            node.args
+            and isinstance(node.args[0], ast.Name)
+            and node.args[0].id in L002_names
+        ):
+            self.errors.append((node.args[0].lineno, node.args[0].col_offset, L002))
 
         self.generic_visit(node)
 
