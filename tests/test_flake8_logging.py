@@ -89,6 +89,16 @@ class TestL001:
             (3, 13, "L001 use logging.getLogger() to instantiate loggers")
         ]
 
+    def test_attr_other_module(self):
+        results = run(
+            """\
+            import our_logging
+            our_logging.Logger("x")
+            """
+        )
+
+        assert results == []
+
     def test_direct(self):
         results = run(
             """\
@@ -106,6 +116,16 @@ class TestL001:
             """\
             from our_logging import Logger
             Logger("x")
+            """
+        )
+
+        assert results == []
+
+    def test_direct_aliased(self):
+        results = run(
+            """\
+            from loggin import Logger as _Logger
+            _Logger("x")
             """
         )
 
