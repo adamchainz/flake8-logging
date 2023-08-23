@@ -1,0 +1,4 @@
+flake8
+pytest
+pytest-flake8-path
+pytest-randomly
