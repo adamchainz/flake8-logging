@@ -152,3 +152,71 @@ class TestL001:
         )
 
         assert results == []
+
+
+class TestL002:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+                logging.getLogger(__file__)
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:2:19: L002 use __name__ with getLogger()"
+        ]
+
+    def test_attr(self):
+        results = run(
+            """\
+            import logging
+            logging.getLogger(__file__)
+            """
+        )
+
+        assert results == [(2, 18, "L002 use __name__ with getLogger()")]
+
+    def test_attr_cached(self):
+        results = run(
+            """\
+            import logging
+            logging.getLogger(__cached__)
+            """
+        )
+
+        assert results == [(2, 18, "L002 use __name__ with getLogger()")]
+
+    def test_direct(self):
+        results = run(
+            """\
+            from logging import getLogger
+            getLogger(__file__)
+            """
+        )
+
+        assert results == [(2, 10, "L002 use __name__ with getLogger()")]
+
+    def test_attr_dunder_name(self):
+        results = run(
+            """\
+            import logging
+            logging.getLogger(__name__)
+            """
+        )
+
+        assert results == []
+
+    def test_attr_other_module(self):
+        results = run(
+            """\
+            import our_logging
+            our_logging.getLogger(__file__)
+            """
+        )
+
+        assert results == []

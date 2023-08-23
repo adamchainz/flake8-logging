@@ -78,3 +78,45 @@ Correct example:
     import logging
 
     logger = logging.getLogger(__name__)
+
+L002: use ``__name__`` with ``getLogger()``
+-------------------------------------------
+
+The `logging documentation <https://docs.python.org/3/library/logging.html#logger-objects>`__ recommends this pattern:
+
+.. code-block:: python
+
+    logging.getLogger(__name__)
+
+|__name__|__ is the fully qualified module name, such as ``camelot.spam``, which is the intended format for logger names.
+
+.. |__name__| replace:: ``__name__``
+__ https://docs.python.org/3/reference/import.html?#name__
+
+This rule detects probably-mistaken usage of similar module-level dunder constants:
+
+* |__cached__|__ - the pathname of the module’s compiled versio˜, such as ``camelot/__pycache__/spam.cpython-311.pyc``.
+
+  .. |__cached__| replace:: ``__cached__``
+  __ https://docs.python.org/3/reference/import.html?#cached__
+
+* |__file__|__ - the pathname of the module, such as ``camelot/spam.py``.
+
+  .. |__file__| replace:: ``__file__``
+  __ https://docs.python.org/3/reference/import.html?#file__
+
+Failing example:
+
+.. code-block:: python
+
+    import logging
+
+    logger = logging.Logger(__file__)
+
+Correct example:
+
+.. code-block:: python
+
+    import logging
+
+    logger = logging.getLogger(__name__)
