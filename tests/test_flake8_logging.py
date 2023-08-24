@@ -332,6 +332,16 @@ class TestL003:
 
         assert results == []
 
+    def test_module_call_no_extra(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Hi")
+            """
+        )
+
+        assert results == []
+
     def test_module_call_in_function_def(self):
         results = run(
             """\
