@@ -342,6 +342,17 @@ class TestL003:
 
         assert results == []
 
+    def test_module_call_extra_unsupported_type(self):
+        results = run(
+            """\
+            import logging
+            extra = {"msg": "Ho"}
+            logging.info("Hi", extra=extra)
+            """
+        )
+
+        assert results == []
+
     def test_module_call_in_function_def(self):
         results = run(
             """\
