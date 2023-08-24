@@ -143,30 +143,35 @@ class Visitor(ast.NodeVisitor):
                 )
 
         if (
-            (
-                isinstance(node.func, ast.Attribute)
-                and node.func.attr in logger_methods
-                and isinstance(node.func.value, ast.Name)
-            )
-            and (
-                (self._logging_name and node.func.value.id == self._logging_name)
-                or (self._logger_name and node.func.value.id == self._logger_name)
-            )
-            and (
-                any((extra_node := kw).arg == "extra" for kw in node.keywords)
-                and isinstance(extra_node.value, ast.Dict)
-            )
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr in logger_methods
+            and isinstance(node.func.value, ast.Name)
+        ) and (
+            (self._logging_name and node.func.value.id == self._logging_name)
+            or (self._logger_name and node.func.value.id == self._logger_name)
         ):
-            for key_node in extra_node.value.keys:
-                if (
-                    isinstance(key_node, ast.Constant)
-                    and key_node.value in logrecord_attributes
+            extra_keys = ()
+            if any((extra_node := kw).arg == "extra" for kw in node.keywords):
+                if isinstance(extra_node.value, ast.Dict):
+                    extra_keys = [
+                        (k.value, k)
+                        for k in extra_node.value.keys
+                        if isinstance(k, ast.Constant)
+                    ]
+                elif (
+                    isinstance(extra_node.value, ast.Call)
+                    and isinstance(extra_node.value.func, ast.Name)
+                    and extra_node.value.func.id == "dict"
                 ):
+                    extra_keys = [(k.arg, k) for k in extra_node.value.keywords]
+
+            for key, key_node in extra_keys:
+                if key in logrecord_attributes:
                     self.errors.append(
                         (
                             key_node.lineno,
                             key_node.col_offset,
-                            L003.format(repr(key_node.value)),
+                            L003.format(repr(key)),
                         )
                     )
 

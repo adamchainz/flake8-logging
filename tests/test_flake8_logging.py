@@ -355,6 +355,18 @@ class TestL003:
             (3, 30, "L003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
+    def test_module_call_dict_constructor(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Hi", extra=dict(msg="Ho"))
+            """
+        )
+
+        assert results == [
+            (2, 30, "L003 extra key 'msg' clashes with LogRecord attribute")
+        ]
+
     def test_logger_call(self):
         results = run(
             """\
@@ -379,4 +391,17 @@ class TestL003:
 
         assert results == [
             (3, 22, "L003 extra key 'msg' clashes with LogRecord attribute")
+        ]
+
+    def test_logger_call_dict_constructor(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Hi", extra=dict(msg="Ho"))
+            """
+        )
+
+        assert results == [
+            (3, 29, "L003 extra key 'msg' clashes with LogRecord attribute")
         ]
