@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+import sys
 from contextlib import contextmanager
 from importlib.metadata import version
 from typing import Any
@@ -167,10 +168,24 @@ class Visitor(ast.NodeVisitor):
 
             for key, key_node in extra_keys:
                 if key in logrecord_attributes:
+                    if sys.version_info >= (3, 9):
+                        lineno = key_node.lineno
+                        col_offset = key_node.col_offset
+                    else:
+                        if isinstance(key_node, ast.keyword):
+                            lineno = key_node.value.lineno
+                            # Educated guess
+                            col_offset = max(
+                                0, key_node.value.col_offset - 1 - len(key)
+                            )
+                        else:
+                            lineno = key_node.lineno
+                            col_offset = key_node.col_offset
+
                     self.errors.append(
                         (
-                            key_node.lineno,
-                            key_node.col_offset,
+                            lineno,
+                            col_offset,
                             L003.format(repr(key)),
                         )
                     )
