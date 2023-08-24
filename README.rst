@@ -161,3 +161,47 @@ Correct example:
 
     response = acme_api()
     logging.info("ACME Response", extra={"response_msg": response.msg})
+
+L004: avoid ``logger.exception()`` outside of ``except`` clauses
+----------------------------------------------------------------
+
+The |exception() documentation|__ states:
+
+.. |exception() documentation| replace:: ``exception()`` documentation
+__ https://docs.python.org/3/library/logging.html#logging.exception
+
+    This function should only be called from an exception handler.
+
+Calling ``exception()`` outside of an exception handler attaches ``None`` exception information, leading to confusing messages:
+
+.. code-block:: pycon
+
+    >>> logging.exception("example")
+    ERROR:root:example
+    NoneType: None
+
+Use ``error()`` instead.
+To log a caught exception, pass it in the ``exc_info`` argument.
+
+This rule detects ``exception()`` calls outside of exception handlers.
+
+Failing examples:
+
+.. code-block:: python
+
+    import logging
+
+    response = acme_api()
+    if response is None:
+        logging.exception("Thing failed")
+
+Correct example:
+
+.. code-block:: python
+
+    import logging
+
+    try:
+        response = acme_api()
+    except AcmeError:
+        logging.exception("Thing failed")

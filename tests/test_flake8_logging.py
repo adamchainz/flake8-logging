@@ -416,3 +416,132 @@ class TestL003:
         assert results == [
             (3, 29, "L003 extra key 'msg' clashes with LogRecord attribute")
         ]
+
+
+class TestL004:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+                logging.exception("Hi")
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:2:1: L004 avoid logger.exception() outside of except clauses"
+        ]
+
+    def test_module_call(self):
+        results = run(
+            """\
+            import logging
+            logging.exception("Hi")
+            """
+        )
+
+        assert results == [
+            (2, 0, "L004 avoid logger.exception() outside of except clauses")
+        ]
+
+    def test_module_call_in_function_def(self):
+        results = run(
+            """\
+            import logging
+            def thing():
+                logging.exception("Hi")
+            """
+        )
+
+        assert results == [
+            (3, 4, "L004 avoid logger.exception() outside of except clauses")
+        ]
+
+    def test_module_call_wrapped_in_function_def(self):
+        # We can’t guarantee when the function will be called…
+        results = run(
+            """\
+            import logging
+            try:
+                acme_api()
+            except AcmeError:
+                def handle():
+                    logging.exception("Hi")
+                handle()
+            """
+        )
+
+        assert results == [
+            (6, 8, "L004 avoid logger.exception() outside of except clauses")
+        ]
+
+    def test_module_call_ok(self):
+        results = run(
+            """\
+            import logging
+            try:
+                acme_api()
+            except AcmeError:
+                logging.exception("Hi")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_ok_in_function_def(self):
+        results = run(
+            """\
+            import logging
+            def thing():
+                try:
+                    acme_api()
+                except AcmeError:
+                    logging.exception("Hi")
+            """
+        )
+
+        assert results == []
+
+    def test_logger_call(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.exception("Hi")
+            """
+        )
+
+        assert results == [
+            (3, 0, "L004 avoid logger.exception() outside of except clauses")
+        ]
+
+    def test_logger_call_in_function_def(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            def thing():
+                logger.exception("Hi")
+            """
+        )
+
+        assert results == [
+            (4, 4, "L004 avoid logger.exception() outside of except clauses")
+        ]
+
+    def test_logger_call_ok(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                acme_api()
+            except AcmeError:
+                logger.exception("Hi")
+            """
+        )
+
+        assert results == []
