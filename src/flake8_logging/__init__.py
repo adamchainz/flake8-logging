@@ -71,6 +71,7 @@ L002_names = frozenset(
     )
 )
 L003 = "L003 extra key {} clashes with LogRecord attribute"
+L004 = "L004 avoid logger.exception() outside of except clauses"
 
 
 class Visitor(ast.NodeVisitor):
@@ -151,6 +152,7 @@ class Visitor(ast.NodeVisitor):
             (self._logging_name and node.func.value.id == self._logging_name)
             or (self._logger_name and node.func.value.id == self._logger_name)
         ):
+            # L003
             extra_keys = ()
             if any((extra_node := kw).arg == "extra" for kw in node.keywords):
                 if isinstance(extra_node.value, ast.Dict):
@@ -188,6 +190,20 @@ class Visitor(ast.NodeVisitor):
                             col_offset,
                             L003.format(repr(key)),
                         )
+                    )
+
+            # L004
+            if node.func.attr == "exception":
+                within_except = False
+                for parent in reversed(self._stack):
+                    if isinstance(parent, ast.ExceptHandler):
+                        within_except = True
+                        break
+                    elif isinstance(parent, (ast.AsyncFunctionDef, ast.FunctionDef)):
+                        break
+                if not within_except:
+                    self.errors.append(
+                        (node.lineno, node.col_offset, L004),
                     )
 
         self.generic_visit(node)
