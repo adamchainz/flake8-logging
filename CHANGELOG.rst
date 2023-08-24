@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Change error codes to start with ``LOG`` so they are more specific.
+
 1.0.1 (2023-08-24)
 ------------------
 

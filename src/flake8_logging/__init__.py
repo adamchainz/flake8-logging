@@ -62,16 +62,16 @@ logrecord_attributes = frozenset(
     )
 )
 
-L001 = "L001 use logging.getLogger() to instantiate loggers"
-L002 = "L002 use __name__ with getLogger()"
-L002_names = frozenset(
+LOG001 = "LOG001 use logging.getLogger() to instantiate loggers"
+LOG002 = "LOG002 use __name__ with getLogger()"
+LOG002_names = frozenset(
     (
         "__cached__",
         "__file__",
     )
 )
-L003 = "L003 extra key {} clashes with LogRecord attribute"
-L004 = "L004 avoid logger.exception() outside of except clauses"
+LOG003 = "LOG003 extra key {} clashes with LogRecord attribute"
+LOG004 = "LOG004 avoid logger.exception() outside of except clauses"
 
 
 class Visitor(ast.NodeVisitor):
@@ -113,7 +113,7 @@ class Visitor(ast.NodeVisitor):
             and node.func.id == "Logger"
             and self._from_imports.get("Logger") == "logging"
         ):
-            self.errors.append((node.lineno, node.col_offset, L001))
+            self.errors.append((node.lineno, node.col_offset, LOG001))
 
         if (
             self._logging_name
@@ -138,10 +138,10 @@ class Visitor(ast.NodeVisitor):
             if (
                 node.args
                 and isinstance(node.args[0], ast.Name)
-                and node.args[0].id in L002_names
+                and node.args[0].id in LOG002_names
             ):
                 self.errors.append(
-                    (node.args[0].lineno, node.args[0].col_offset, L002),
+                    (node.args[0].lineno, node.args[0].col_offset, LOG002),
                 )
 
         if (
@@ -188,7 +188,7 @@ class Visitor(ast.NodeVisitor):
                         (
                             lineno,
                             col_offset,
-                            L003.format(repr(key)),
+                            LOG003.format(repr(key)),
                         )
                     )
 
@@ -203,7 +203,7 @@ class Visitor(ast.NodeVisitor):
                         break
                 if not within_except:
                     self.errors.append(
-                        (node.lineno, node.col_offset, L004),
+                        (node.lineno, node.col_offset, LOG004),
                     )
 
         self.generic_visit(node)
