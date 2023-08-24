@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import ast
+from contextlib import contextmanager
 from importlib.metadata import version
 from typing import Any
 from typing import Generator
@@ -37,6 +38,7 @@ class Visitor(ast.NodeVisitor):
         self.errors: list[tuple[int, int, str]] = []
         self._logging_name: str | None = None
         self._from_imports: dict[str, str] = {}
+        self._module_level = True
 
     def visit_Import(self, node: ast.Import) -> None:
         for alias in node.names:
@@ -52,7 +54,8 @@ class Visitor(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> None:
         if (
-            self._logging_name
+            self._module_level
+            and self._logging_name
             and isinstance(node.func, ast.Attribute)
             and node.func.attr == "Logger"
             and isinstance(node.func.value, ast.Name)
@@ -87,9 +90,18 @@ class Visitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        # Avoid descending into a new scope
-        return None
+        with self.inner_scope():
+            self.generic_visit(node)
 
     def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
-        # Avoid descending into a new scope
-        return None
+        with self.inner_scope():
+            self.generic_visit(node)
+
+    @contextmanager
+    def inner_scope(self) -> Generator[None, None, None]:
+        original = self._module_level
+        self._module_level = False
+        try:
+            yield
+        finally:
+            self._module_level = original

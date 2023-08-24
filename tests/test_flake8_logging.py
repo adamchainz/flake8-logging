@@ -191,6 +191,17 @@ class TestL002:
 
         assert results == [(2, 18, "L002 use __name__ with getLogger()")]
 
+    def test_attr_in_function_def(self):
+        results = run(
+            """\
+            import logging
+            def thing():
+                logging.getLogger(__file__)
+            """
+        )
+
+        assert results == [(3, 22, "L002 use __name__ with getLogger()")]
+
     def test_direct(self):
         results = run(
             """\
