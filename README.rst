@@ -61,7 +61,7 @@ Use |getLogger()|__ to correctly instantiate loggers.
 .. |getLogger()| replace:: ``getLogger()``
 __ https://docs.python.org/3/library/logging.html#logging.getLogger
 
-This rule detects any module-level logger instantiation.
+This rule detects any module-level calls to ``Logger()``.
 
 Failing example:
 
@@ -120,3 +120,44 @@ Correct example:
     import logging
 
     logger = logging.getLogger(__name__)
+
+L003: ``extra`` key ``'<key>'`` clashes with LogRecord attribute
+----------------------------------------------------------------
+
+The |extra documentation|__ states:
+
+.. |extra documentation| replace:: ``extra`` documentation
+__ https://docs.python.org/3/library/logging.html#logging.Logger.debug
+
+    The keys in the dictionary passed in ``extra`` should not clash with the keys used by the logging system.
+
+Such clashes crash at runtime with an error like:
+
+.. code-block:: text
+
+    KeyError: "Attempt to overwrite 'msg' in LogRecord"
+
+But this error is only raised if the message is not filtered out by level.
+
+This rule detects such clashes by checking for keys matching the |LogRecord attributes|__.
+
+.. |LogRecord attributes| replace:: ``LogRecord`` attributes
+__ https://docs.python.org/3/library/logging.html#logrecord-attributes
+
+Failing example:
+
+.. code-block:: python
+
+    import logging
+
+    response = acme_api()
+    logging.info("ACME Response", extra={"msg": response.msg})
+
+Correct example:
+
+.. code-block:: python
+
+    import logging
+
+    response = acme_api()
+    logging.info("ACME Response", extra={"response_msg": response.msg})
