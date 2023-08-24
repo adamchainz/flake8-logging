@@ -18,7 +18,7 @@ flake8-logging
    :target: https://github.com/pre-commit/pre-commit
    :alt: pre-commit
 
-A `Flake8 <https://flake8.readthedocs.io/en/latest/>`_ plugin to improve logging.
+A `Flake8 <https://flake8.readthedocs.io/en/latest/>`_ plugin that checks for issues using the standard library logging module.
 
 Requirements
 ============
