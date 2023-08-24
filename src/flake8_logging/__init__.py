@@ -23,6 +23,44 @@ class Plugin:
             yield line, col, msg, type_
 
 
+logger_methods = frozenset(
+    (
+        "debug",
+        "info",
+        "warning",
+        "error",
+        "critical",
+        "log",
+        "exception",
+    )
+)
+logrecord_attributes = frozenset(
+    (
+        "asctime",
+        "args",
+        "created",
+        "exc_info",
+        "exc_text",
+        "filename",
+        "funcName",
+        "levelname",
+        "levelno",
+        "lineno",
+        "module",
+        "msecs",
+        "msg",
+        "name",
+        "pathname",
+        "process",
+        "processName",
+        "relativeCreated",
+        "stack_info",
+        "taskName",
+        "thread",
+        "threadName",
+    )
+)
+
 L001 = "L001 use logging.getLogger() to instantiate loggers"
 L002 = "L002 use __name__ with getLogger()"
 L002_names = frozenset(
@@ -31,14 +69,22 @@ L002_names = frozenset(
         "__file__",
     )
 )
+L003 = "L003 extra key {} clashes with LogRecord attribute"
 
 
 class Visitor(ast.NodeVisitor):
     def __init__(self) -> None:
         self.errors: list[tuple[int, int, str]] = []
         self._logging_name: str | None = None
+        self._logger_name: str | None = None
         self._from_imports: dict[str, str] = {}
         self._module_level = True
+        self._stack: list[ast.AST] = []
+
+    def visit(self, node: ast.AST) -> None:
+        self._stack.append(node)
+        super().visit(node)
+        self._stack.pop()
 
     def visit_Import(self, node: ast.Import) -> None:
         for alias in node.names:
@@ -68,24 +114,61 @@ class Visitor(ast.NodeVisitor):
             self.errors.append((node.lineno, node.col_offset, L001))
 
         if (
-            (
-                self._logging_name
-                and isinstance(node.func, ast.Attribute)
-                and node.func.attr == "getLogger"
-                and isinstance(node.func.value, ast.Name)
-                and node.func.value.id == self._logging_name
-            )
-            or (
-                isinstance(node.func, ast.Name)
-                and node.func.id == "getLogger"
-                and self._from_imports.get("getLogger") == "logging"
-            )
-        ) and (
-            node.args
-            and isinstance(node.args[0], ast.Name)
-            and node.args[0].id in L002_names
+            self._logging_name
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "getLogger"
+            and isinstance(node.func.value, ast.Name)
+            and node.func.value.id == self._logging_name
+        ) or (
+            isinstance(node.func, ast.Name)
+            and node.func.id == "getLogger"
+            and self._from_imports.get("getLogger") == "logging"
         ):
-            self.errors.append((node.args[0].lineno, node.args[0].col_offset, L002))
+            if (
+                self._module_level
+                and len(self._stack) >= 2
+                and isinstance(assign := self._stack[-2], ast.Assign)
+                and len(assign.targets) == 1
+                and isinstance(assign.targets[0], ast.Name)
+            ):
+                self._logger_name = assign.targets[0].id
+
+            if (
+                node.args
+                and isinstance(node.args[0], ast.Name)
+                and node.args[0].id in L002_names
+            ):
+                self.errors.append(
+                    (node.args[0].lineno, node.args[0].col_offset, L002),
+                )
+
+        if (
+            (
+                isinstance(node.func, ast.Attribute)
+                and node.func.attr in logger_methods
+                and isinstance(node.func.value, ast.Name)
+            )
+            and (
+                (self._logging_name and node.func.value.id == self._logging_name)
+                or (self._logger_name and node.func.value.id == self._logger_name)
+            )
+            and (
+                any((extra_node := kw).arg == "extra" for kw in node.keywords)
+                and isinstance(extra_node.value, ast.Dict)
+            )
+        ):
+            for key_node in extra_node.value.keys:
+                if (
+                    isinstance(key_node, ast.Constant)
+                    and key_node.value in logrecord_attributes
+                ):
+                    self.errors.append(
+                        (
+                            key_node.lineno,
+                            key_node.col_offset,
+                            L003.format(repr(key_node.value)),
+                        )
+                    )
 
         self.generic_visit(node)
 
