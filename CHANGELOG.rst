@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* LOG001: Avoid detecting inside function definitions when using ``Logger`` directly.
+
 1.0.2 (2023-08-24)
 ------------------
 
