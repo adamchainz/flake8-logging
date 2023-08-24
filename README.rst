@@ -71,7 +71,7 @@ Failing example:
 
     logger = logging.Logger(__name__)
 
-Correct example:
+Corrected:
 
 .. code-block:: python
 
@@ -111,9 +111,9 @@ Failing example:
 
     import logging
 
-    logger = logging.Logger(__file__)
+    logger = logging.getLogger(__file__)
 
-Correct example:
+Corrected:
 
 .. code-block:: python
 
@@ -137,7 +137,8 @@ Such clashes crash at runtime with an error like:
 
     KeyError: "Attempt to overwrite 'msg' in LogRecord"
 
-But this error is only raised if the message is not filtered out by level.
+Unfortunately, this error is only raised if the message is not filtered out by level.
+Tests may therefore not encounter the check, if they run with a limited logging configuration.
 
 This rule detects such clashes by checking for keys matching the |LogRecord attributes|__.
 
@@ -149,18 +150,20 @@ Failing example:
 .. code-block:: python
 
     import logging
+    logger = logging.getLogger(__name__)
 
     response = acme_api()
-    logging.info("ACME Response", extra={"msg": response.msg})
+    logger.info("ACME Response", extra={"msg": response.msg})
 
-Correct example:
+Corrected:
 
 .. code-block:: python
 
     import logging
+    logger = logging.getLogger(__name__)
 
     response = acme_api()
-    logging.info("ACME Response", extra={"response_msg": response.msg})
+    logger.info("ACME Response", extra={"response_msg": response.msg})
 
 L004: avoid ``logger.exception()`` outside of ``except`` clauses
 ----------------------------------------------------------------
@@ -185,7 +188,7 @@ To log a caught exception, pass it in the ``exc_info`` argument.
 
 This rule detects ``exception()`` calls outside of exception handlers.
 
-Failing examples:
+Failing example:
 
 .. code-block:: python
 
@@ -193,7 +196,7 @@ Failing examples:
 
     response = acme_api()
     if response is None:
-        logging.exception("Thing failed")
+        logging.exception("ACME failed")
 
 Correct example:
 
@@ -201,7 +204,6 @@ Correct example:
 
     import logging
 
-    try:
-        response = acme_api()
-    except AcmeError:
-        logging.exception("Thing failed")
+    response = acme_api()
+    if response is None:
+        logging.error("ACME failed")
