@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Correct entry point definition so codes are picked up by default.
+
 1.0.0 (2023-08-24)
 ------------------
 
