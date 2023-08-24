@@ -16,7 +16,7 @@ def flake8_path(flake8_path):
         dedent(
             """\
             [flake8]
-            select = L
+            select = LOG
             """
         )
     )
@@ -35,7 +35,7 @@ def test_version(flake8_path):
     assert re.search(version_regex, unwrapped)
 
 
-class TestL001:
+class TestLOG001:
     def test_integration(self, flake8_path):
         (flake8_path / "example.py").write_text(
             dedent(
@@ -49,7 +49,7 @@ class TestL001:
         result = flake8_path.run_flake8()
 
         assert result.out_lines == [
-            "./example.py:2:1: L001 use logging.getLogger() to instantiate loggers"
+            "./example.py:2:1: LOG001 use logging.getLogger() to instantiate loggers"
         ]
 
     def test_attr(self):
@@ -61,7 +61,7 @@ class TestL001:
         )
 
         assert results == [
-            (2, 0, "L001 use logging.getLogger() to instantiate loggers")
+            (2, 0, "LOG001 use logging.getLogger() to instantiate loggers")
         ]
 
     def test_attr_as_name(self):
@@ -73,7 +73,7 @@ class TestL001:
         )
 
         assert results == [
-            (2, 0, "L001 use logging.getLogger() to instantiate loggers")
+            (2, 0, "LOG001 use logging.getLogger() to instantiate loggers")
         ]
 
     def test_attr_in_class_def(self):
@@ -86,7 +86,7 @@ class TestL001:
         )
 
         assert results == [
-            (3, 13, "L001 use logging.getLogger() to instantiate loggers")
+            (3, 13, "LOG001 use logging.getLogger() to instantiate loggers")
         ]
 
     def test_attr_other_module(self):
@@ -108,7 +108,7 @@ class TestL001:
         )
 
         assert results == [
-            (2, 0, "L001 use logging.getLogger() to instantiate loggers")
+            (2, 0, "LOG001 use logging.getLogger() to instantiate loggers")
         ]
 
     def test_direct_not_from_logging(self):
@@ -154,7 +154,7 @@ class TestL001:
         assert results == []
 
 
-class TestL002:
+class TestLOG002:
     def test_integration(self, flake8_path):
         (flake8_path / "example.py").write_text(
             dedent(
@@ -168,7 +168,7 @@ class TestL002:
         result = flake8_path.run_flake8()
 
         assert result.out_lines == [
-            "./example.py:2:19: L002 use __name__ with getLogger()"
+            "./example.py:2:19: LOG002 use __name__ with getLogger()"
         ]
 
     def test_attr(self):
@@ -179,7 +179,7 @@ class TestL002:
             """
         )
 
-        assert results == [(2, 18, "L002 use __name__ with getLogger()")]
+        assert results == [(2, 18, "LOG002 use __name__ with getLogger()")]
 
     def test_attr_cached(self):
         results = run(
@@ -189,7 +189,7 @@ class TestL002:
             """
         )
 
-        assert results == [(2, 18, "L002 use __name__ with getLogger()")]
+        assert results == [(2, 18, "LOG002 use __name__ with getLogger()")]
 
     def test_attr_in_function_def(self):
         results = run(
@@ -200,7 +200,7 @@ class TestL002:
             """
         )
 
-        assert results == [(3, 22, "L002 use __name__ with getLogger()")]
+        assert results == [(3, 22, "LOG002 use __name__ with getLogger()")]
 
     def test_direct(self):
         results = run(
@@ -210,7 +210,7 @@ class TestL002:
             """
         )
 
-        assert results == [(2, 10, "L002 use __name__ with getLogger()")]
+        assert results == [(2, 10, "LOG002 use __name__ with getLogger()")]
 
     def test_attr_dunder_name(self):
         results = run(
@@ -233,7 +233,7 @@ class TestL002:
         assert results == []
 
 
-class TestL003:
+class TestLOG003:
     def test_integration(self, flake8_path):
         (flake8_path / "example.py").write_text(
             dedent(
@@ -247,7 +247,7 @@ class TestL003:
         result = flake8_path.run_flake8()
 
         assert result.out_lines == [
-            "./example.py:2:27: L003 extra key 'msg' clashes with LogRecord attribute"
+            "./example.py:2:27: LOG003 extra key 'msg' clashes with LogRecord attribute"
         ]
 
     def test_module_call(self):
@@ -259,7 +259,7 @@ class TestL003:
         )
 
         assert results == [
-            (2, 26, "L003 extra key 'msg' clashes with LogRecord attribute")
+            (2, 26, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_module_call_debug(self):
@@ -271,7 +271,7 @@ class TestL003:
         )
 
         assert results == [
-            (2, 27, "L003 extra key 'msg' clashes with LogRecord attribute")
+            (2, 27, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_module_call_args(self):
@@ -283,7 +283,7 @@ class TestL003:
         )
 
         assert results == [
-            (2, 26, "L003 extra key 'args' clashes with LogRecord attribute")
+            (2, 26, "LOG003 extra key 'args' clashes with LogRecord attribute")
         ]
 
     def test_module_call_multiline(self):
@@ -300,7 +300,7 @@ class TestL003:
         )
 
         assert results == [
-            (5, 8, "L003 extra key 'msg' clashes with LogRecord attribute")
+            (5, 8, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_module_call_multiple(self):
@@ -318,8 +318,8 @@ class TestL003:
         )
 
         assert results == [
-            (5, 8, "L003 extra key 'args' clashes with LogRecord attribute"),
-            (6, 8, "L003 extra key 'msg' clashes with LogRecord attribute"),
+            (5, 8, "LOG003 extra key 'args' clashes with LogRecord attribute"),
+            (6, 8, "LOG003 extra key 'msg' clashes with LogRecord attribute"),
         ]
 
     def test_module_call_no_clash(self):
@@ -363,7 +363,7 @@ class TestL003:
         )
 
         assert results == [
-            (3, 30, "L003 extra key 'msg' clashes with LogRecord attribute")
+            (3, 30, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_module_call_dict_constructor(self):
@@ -375,7 +375,7 @@ class TestL003:
         )
 
         assert results == [
-            (2, 30, "L003 extra key 'msg' clashes with LogRecord attribute")
+            (2, 30, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_logger_call(self):
@@ -388,7 +388,7 @@ class TestL003:
         )
 
         assert results == [
-            (3, 25, "L003 extra key 'msg' clashes with LogRecord attribute")
+            (3, 25, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_logger_call_other_name(self):
@@ -401,7 +401,7 @@ class TestL003:
         )
 
         assert results == [
-            (3, 22, "L003 extra key 'msg' clashes with LogRecord attribute")
+            (3, 22, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_logger_call_dict_constructor(self):
@@ -414,11 +414,11 @@ class TestL003:
         )
 
         assert results == [
-            (3, 29, "L003 extra key 'msg' clashes with LogRecord attribute")
+            (3, 29, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
 
-class TestL004:
+class TestLOG004:
     def test_integration(self, flake8_path):
         (flake8_path / "example.py").write_text(
             dedent(
@@ -432,7 +432,7 @@ class TestL004:
         result = flake8_path.run_flake8()
 
         assert result.out_lines == [
-            "./example.py:2:1: L004 avoid logger.exception() outside of except clauses"
+            "./example.py:2:1: LOG004 avoid logger.exception() outside of except clauses"
         ]
 
     def test_module_call(self):
@@ -444,7 +444,7 @@ class TestL004:
         )
 
         assert results == [
-            (2, 0, "L004 avoid logger.exception() outside of except clauses")
+            (2, 0, "LOG004 avoid logger.exception() outside of except clauses")
         ]
 
     def test_module_call_in_function_def(self):
@@ -457,7 +457,7 @@ class TestL004:
         )
 
         assert results == [
-            (3, 4, "L004 avoid logger.exception() outside of except clauses")
+            (3, 4, "LOG004 avoid logger.exception() outside of except clauses")
         ]
 
     def test_module_call_wrapped_in_function_def(self):
@@ -475,7 +475,7 @@ class TestL004:
         )
 
         assert results == [
-            (6, 8, "L004 avoid logger.exception() outside of except clauses")
+            (6, 8, "LOG004 avoid logger.exception() outside of except clauses")
         ]
 
     def test_module_call_ok(self):
@@ -515,7 +515,7 @@ class TestL004:
         )
 
         assert results == [
-            (3, 0, "L004 avoid logger.exception() outside of except clauses")
+            (3, 0, "LOG004 avoid logger.exception() outside of except clauses")
         ]
 
     def test_logger_call_in_function_def(self):
@@ -529,7 +529,7 @@ class TestL004:
         )
 
         assert results == [
-            (4, 4, "L004 avoid logger.exception() outside of except clauses")
+            (4, 4, "LOG004 avoid logger.exception() outside of except clauses")
         ]
 
     def test_logger_call_ok(self):

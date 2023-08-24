@@ -47,8 +47,8 @@ Check out my book `Boost Your Django DX <https://adamchainz.gumroad.com/l/byddx>
 Rules
 =====
 
-L001: use ``logging.getLogger()`` to instantiate loggers
---------------------------------------------------------
+LOG001 use ``logging.getLogger()`` to instantiate loggers
+---------------------------------------------------------
 
 The `Logger Objects documentation section <https://docs.python.org/3/library/logging.html#logger-objects>`__ starts:
 
@@ -79,8 +79,8 @@ Corrected:
 
     logger = logging.getLogger(__name__)
 
-L002: use ``__name__`` with ``getLogger()``
--------------------------------------------
+LOG002 use ``__name__`` with ``getLogger()``
+--------------------------------------------
 
 The `logging documentation <https://docs.python.org/3/library/logging.html#logger-objects>`__ recommends this pattern:
 
@@ -121,8 +121,8 @@ Corrected:
 
     logger = logging.getLogger(__name__)
 
-L003: ``extra`` key ``'<key>'`` clashes with LogRecord attribute
-----------------------------------------------------------------
+LOG003 ``extra`` key ``'<key>'`` clashes with LogRecord attribute
+-----------------------------------------------------------------
 
 The |extra documentation|__ states:
 
@@ -165,8 +165,8 @@ Corrected:
     response = acme_api()
     logger.info("ACME Response", extra={"response_msg": response.msg})
 
-L004: avoid ``logger.exception()`` outside of ``except`` clauses
-----------------------------------------------------------------
+LOG004 avoid ``logger.exception()`` outside of ``except`` clauses
+-----------------------------------------------------------------
 
 The |exception() documentation|__ states:
 
