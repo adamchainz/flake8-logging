@@ -454,8 +454,7 @@ class TestLOG004:
         result = flake8_path.run_flake8()
 
         assert result.out_lines == [
-            "./example.py:2:1: LOG004 avoid logger.exception() outside of "
-            + "exception handlers"
+            "./example.py:2:1: LOG004 avoid exception() outside of exception handlers"
         ]
 
     def test_module_call(self):
@@ -467,7 +466,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (2, 0, "LOG004 avoid logger.exception() outside of exception handlers")
+            (2, 0, "LOG004 avoid exception() outside of exception handlers")
         ]
 
     def test_module_call_in_function_def(self):
@@ -480,7 +479,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (3, 4, "LOG004 avoid logger.exception() outside of exception handlers")
+            (3, 4, "LOG004 avoid exception() outside of exception handlers")
         ]
 
     def test_module_call_wrapped_in_function_def(self):
@@ -498,7 +497,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (6, 8, "LOG004 avoid logger.exception() outside of exception handlers")
+            (6, 8, "LOG004 avoid exception() outside of exception handlers")
         ]
 
     def test_module_call_ok(self):
@@ -538,7 +537,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (3, 0, "LOG004 avoid logger.exception() outside of exception handlers")
+            (3, 0, "LOG004 avoid exception() outside of exception handlers")
         ]
 
     def test_logger_call_in_function_def(self):
@@ -552,7 +551,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (4, 4, "LOG004 avoid logger.exception() outside of exception handlers")
+            (4, 4, "LOG004 avoid exception() outside of exception handlers")
         ]
 
     def test_logger_call_ok(self):
