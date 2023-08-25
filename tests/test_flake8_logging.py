@@ -568,3 +568,126 @@ class TestLOG004:
         )
 
         assert results == []
+
+
+class TestLOG005:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+                try:
+                    int(x)
+                except ValueError as exc:
+                    logging.error("Bad int", exc_info=exc)
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:5:5: LOG005 use exception() within an except clause"
+        ]
+
+    def test_module_call_with_exc_info(self):
+        results = run(
+            """\
+            import logging
+            try:
+                int(x)
+            except ValueError as exc:
+                logging.error("Bad int", exc_info=exc)
+            """
+        )
+
+        assert results == [
+            (5, 4, "LOG005 use exception() within an except clause"),
+        ]
+
+    def test_module_call_with_exc_info_true(self):
+        results = run(
+            """\
+            import logging
+            try:
+                int(x)
+            except ValueError as exc:
+                logging.error("Bad int", exc_info=True)
+            """
+        )
+
+        assert results == [
+            (5, 4, "LOG005 use exception() within an except clause"),
+        ]
+
+    def test_module_call_with_exc_info_1(self):
+        results = run(
+            """\
+            import logging
+            try:
+                int(x)
+            except ValueError as exc:
+                logging.error("Bad int", exc_info=1)
+            """
+        )
+
+        assert results == [
+            (5, 4, "LOG005 use exception() within an except clause"),
+        ]
+
+    def test_module_call_with_exc_info_string(self):
+        results = run(
+            """\
+            import logging
+            try:
+                int(x)
+            except ValueError as exc:
+                logging.error("Bad int", exc_info="yes")
+            """
+        )
+
+        assert results == [
+            (5, 4, "LOG005 use exception() within an except clause"),
+        ]
+
+    def test_module_call_without_exc_info(self):
+        results = run(
+            """\
+            import logging
+            try:
+                int(x)
+            except ValueError:
+                logging.error("Bad int")
+            """
+        )
+
+        assert results == [
+            (5, 4, "LOG005 use exception() within an except clause"),
+        ]
+
+    def test_module_call_with_false_exc_info(self):
+        results = run(
+            """\
+            import logging
+            try:
+                int(x)
+            except ValueError:
+                logging.error("Bad int", exc_info=False)
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_with_alternative_exc_info(self):
+        results = run(
+            """\
+            import logging
+            try:
+                int(x)
+            except ValueError as exc:
+                exc2 = AttributeError("Bad int")
+                logging.error("Bad int", exc_info=exc2)
+            """
+        )
+
+        assert results == []
