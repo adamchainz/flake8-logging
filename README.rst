@@ -165,8 +165,8 @@ Corrected:
     response = acme_api()
     logger.info("ACME Response", extra={"response_msg": response.msg})
 
-LOG004 avoid ``logger.exception()`` outside of exception handlers
------------------------------------------------------------------
+LOG004 avoid ``exception()`` outside of exception handlers
+----------------------------------------------------------
 
 The |exception() documentation|__ states:
 
