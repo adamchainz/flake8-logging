@@ -27,6 +27,7 @@ logger_methods = frozenset(
     (
         "debug",
         "info",
+        "warn",
         "warning",
         "error",
         "critical",
@@ -74,6 +75,7 @@ LOG004 = "LOG004 avoid exception() outside of exception handlers"
 LOG005 = "LOG005 use exception() within an exception handler"
 LOG006 = "LOG006 redundant exc_info argument for exception()"
 LOG007 = "LOG007 use error() instead of exception() with exc_info=False"
+LOG008 = "LOG008 warn() is deprecated, use warning() instead"
 
 
 class Visitor(ast.NodeVisitor):
@@ -155,6 +157,10 @@ class Visitor(ast.NodeVisitor):
             (self._logging_name and node.func.value.id == self._logging_name)
             or (self._logger_name and node.func.value.id == self._logger_name)
         ):
+            # LOG008
+            if node.func.attr == "warn":
+                self.errors.append((node.lineno, node.col_offset, LOG008))
+
             # LOG003
             extra_keys = ()
             if any((extra_node := kw).arg == "extra" for kw in node.keywords):
