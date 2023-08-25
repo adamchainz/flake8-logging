@@ -76,6 +76,7 @@ LOG005 = "LOG005 use exception() within an exception handler"
 LOG006 = "LOG006 redundant exc_info argument for exception()"
 LOG007 = "LOG007 use error() instead of exception() with exc_info=False"
 LOG008 = "LOG008 warn() is deprecated, use warning() instead"
+LOG009 = "LOG009 WARN is undocumented, use WARNING instead"
 
 
 class Visitor(ast.NodeVisitor):
@@ -98,9 +99,28 @@ class Visitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
-        for alias in node.names:
-            if node.module is not None and not alias.asname:
-                self._from_imports[alias.name] = node.module
+        if node.module == "logging":
+            for alias in node.names:
+                if alias.name == "WARN":
+                    if sys.version_info >= (3, 10):
+                        lineno = alias.lineno
+                        col_offset = alias.col_offset
+                    else:
+                        lineno = node.lineno
+                        col_offset = node.col_offset
+                    self.errors.append((lineno, col_offset, LOG009))
+                if not alias.asname:
+                    self._from_imports[alias.name] = node.module
+        self.generic_visit(node)
+
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        if (
+            self._logging_name
+            and isinstance(node.value, ast.Name)
+            and node.value.id == self._logging_name
+            and node.attr == "WARN"
+        ):
+            self.errors.append((node.lineno, node.col_offset, LOG009))
         self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call) -> None:

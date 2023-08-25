@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import re
+import sys
 from importlib.metadata import version
 from textwrap import dedent
 
@@ -929,4 +930,93 @@ class TestLOG008:
 
         assert results == [
             (3, 0, "LOG008 warn() is deprecated, use warning() instead"),
+        ]
+
+
+class TestLOG009:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+                logging.WARN
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:2:1: LOG009 WARN is undocumented, use WARNING instead"
+        ]
+
+    def test_access(self):
+        results = run(
+            """\
+            import logging
+            logging.WARN
+            """
+        )
+
+        assert results == [
+            (2, 0, "LOG009 WARN is undocumented, use WARNING instead"),
+        ]
+
+    def test_access_alias(self):
+        results = run(
+            """\
+            import logging as log
+            log.WARN
+            """
+        )
+
+        assert results == [
+            (2, 0, "LOG009 WARN is undocumented, use WARNING instead"),
+        ]
+
+    def test_import(self):
+        results = run(
+            """\
+            from logging import WARN
+            """
+        )
+
+        if sys.version_info >= (3, 10):
+            pos = (1, 20)
+        else:
+            pos = (1, 0)
+        assert results == [
+            (*pos, "LOG009 WARN is undocumented, use WARNING instead"),
+        ]
+
+    def test_import_multiline(self):
+        results = run(
+            """\
+            from logging import (
+                WARN,
+            )
+            """
+        )
+
+        if sys.version_info >= (3, 10):
+            pos = (2, 4)
+        else:
+            pos = (1, 0)
+        assert results == [
+            (*pos, "LOG009 WARN is undocumented, use WARNING instead"),
+        ]
+
+    def test_import_alias(self):
+        results = run(
+            """\
+            from logging import WARN as whatev
+            """
+        )
+
+        if sys.version_info >= (3, 10):
+            pos = (1, 20)
+        else:
+            pos = (1, 0)
+        assert results == [
+            (*pos, "LOG009 WARN is undocumented, use WARNING instead"),
         ]
