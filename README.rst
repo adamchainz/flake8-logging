@@ -287,7 +287,7 @@ Corrected:
 
 .. code-block:: python
 
-    logger.exception("Left phalange missing")
+    logger.error("Left phalange missing")
 
 LOG008 ``warn()`` is deprecated, use ``warning()`` instead
 ----------------------------------------------------------
