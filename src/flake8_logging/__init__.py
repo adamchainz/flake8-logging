@@ -152,7 +152,7 @@ class Visitor(ast.NodeVisitor):
             (self._logging_name and node.func.value.id == self._logging_name)
             or (self._logger_name and node.func.value.id == self._logger_name)
         ):
-            # L003
+            # LOG003
             extra_keys = ()
             if any((extra_node := kw).arg == "extra" for kw in node.keywords):
                 if isinstance(extra_node.value, ast.Dict):
@@ -192,7 +192,7 @@ class Visitor(ast.NodeVisitor):
                         )
                     )
 
-            # L004
+            # LOG004
             if node.func.attr == "exception":
                 within_except = False
                 for parent in reversed(self._stack):
