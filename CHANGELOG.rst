@@ -10,6 +10,8 @@ Changelog
 
 * Add rule LOG007 that detects ``exception()`` calls with falsy ``exc_info`` arguments, which are better written as ``error()``.
 
+* Add rule LOG008 that detects calls to the deprecated, undocumented ``warn()`` method.
+
 1.0.2 (2023-08-24)
 ------------------
 

@@ -288,3 +288,27 @@ Corrected:
 .. code-block:: python
 
     logger.exception("Left phalange missing")
+
+LOG008 ``warn()`` is deprecated, use ``warning()`` instead
+----------------------------------------------------------
+
+The ``warn()`` method is a deprecated, undocumented alias for |warning()|__
+``warning()`` should always be used instead.
+The method was deprecated in Python 2.7, in commit `04d5bc00a2 <https://github.com/python/cpython/commit/04d5bc00a219860c69ea17eaa633d3ab9917409f>`__, and removed in Python 3.13, in commit `dcc028d924 <https://github.com/python/cpython/commit/dcc028d92428bd57358a5028ada2a53fc79fc365>`__.
+
+.. |warning()| replace:: ``warning()``
+__ https://docs.python.org/3/library/logging.html#logging.Logger.warning
+
+This rule detects calls to ``warn()``.
+
+Failing example:
+
+.. code-block:: python
+
+    logger.warn("Cheesy puns incoming")
+
+Corrected:
+
+.. code-block:: python
+
+    logger.warning("Cheesy puns incoming")

@@ -887,3 +887,46 @@ class TestLOG007:
         assert results == [
             (6, 29, "LOG007 use error() instead of exception() with exc_info=False"),
         ]
+
+
+class TestLOG008:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+                logging.warn("Squawk")
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:2:1: LOG008 warn() is deprecated, use warning() instead"
+        ]
+
+    def test_module_call(self):
+        results = run(
+            """\
+            import logging
+            logging.warn("Squawk")
+            """
+        )
+
+        assert results == [
+            (2, 0, "LOG008 warn() is deprecated, use warning() instead"),
+        ]
+
+    def test_logger_call(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warn("Squawk")
+            """
+        )
+
+        assert results == [
+            (3, 0, "LOG008 warn() is deprecated, use warning() instead"),
+        ]
