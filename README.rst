@@ -218,7 +218,7 @@ Both methods log with the level ``ERROR``.
 .. |exception()| replace:: ``exception()``
 __ https://docs.python.org/3/library/logging.html#logging.Logger.exception
 
-This rule detects ``error()`` calls within exception handlers with an ``exc_info`` argument.
+This rule detects ``error()`` calls within exception handlers, excluding those with a falsy ``exc_info`` argument.
 
 Failing example:
 
@@ -237,6 +237,15 @@ Corrected:
         acme_api()
     except AcmeError:
         logger.exception("ACME API failed")
+
+Or alternatively, if the exception information is truly uninformative:
+
+.. code-block:: python
+
+    try:
+        acme_api()
+    except DuplicateError:
+        logger.error("ACME Duplicate Error", exc_info=False)
 
 LOG006 redundant ``exc_info`` argument for ``exception()``
 ----------------------------------------------------------
