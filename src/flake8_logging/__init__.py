@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import ast
 import sys
-from contextlib import contextmanager
 from importlib.metadata import version
 from typing import Any
 from typing import Generator
@@ -80,7 +79,6 @@ class Visitor(ast.NodeVisitor):
         self._logging_name: str | None = None
         self._logger_name: str | None = None
         self._from_imports: dict[str, str] = {}
-        self._module_level = True
         self._stack: list[ast.AST] = []
 
     def visit(self, node: ast.AST) -> None:
@@ -102,17 +100,19 @@ class Visitor(ast.NodeVisitor):
 
     def visit_Call(self, node: ast.Call) -> None:
         if (
-            self._module_level
-            and self._logging_name
-            and isinstance(node.func, ast.Attribute)
-            and node.func.attr == "Logger"
-            and isinstance(node.func.value, ast.Name)
-            and node.func.value.id == self._logging_name
-        ) or (
-            isinstance(node.func, ast.Name)
-            and node.func.id == "Logger"
-            and self._from_imports.get("Logger") == "logging"
-        ):
+            (
+                self._logging_name
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "Logger"
+                and isinstance(node.func.value, ast.Name)
+                and node.func.value.id == self._logging_name
+            )
+            or (
+                isinstance(node.func, ast.Name)
+                and node.func.id == "Logger"
+                and self._from_imports.get("Logger") == "logging"
+            )
+        ) and not self._at_module_level():
             self.errors.append((node.lineno, node.col_offset, LOG001))
 
         if (
@@ -127,11 +127,11 @@ class Visitor(ast.NodeVisitor):
             and self._from_imports.get("getLogger") == "logging"
         ):
             if (
-                self._module_level
-                and len(self._stack) >= 2
+                len(self._stack) >= 2
                 and isinstance(assign := self._stack[-2], ast.Assign)
                 and len(assign.targets) == 1
                 and isinstance(assign.targets[0], ast.Name)
+                and not self._at_module_level()
             ):
                 self._logger_name = assign.targets[0].id
 
@@ -208,19 +208,8 @@ class Visitor(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
-        with self.inner_scope():
-            self.generic_visit(node)
-
-    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
-        with self.inner_scope():
-            self.generic_visit(node)
-
-    @contextmanager
-    def inner_scope(self) -> Generator[None, None, None]:
-        original = self._module_level
-        self._module_level = False
-        try:
-            yield
-        finally:
-            self._module_level = original
+    def _at_module_level(self):
+        return any(
+            isinstance(parent, (ast.FunctionDef, ast.AsyncFunctionDef))
+            for parent in self._stack
+        )

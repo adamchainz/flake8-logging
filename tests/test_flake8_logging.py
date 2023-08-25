@@ -142,12 +142,34 @@ class TestLOG001:
 
         assert results == []
 
+    def test_direct_in_function_def(self):
+        results = run(
+            """\
+            from logging import Logger
+            def test_thing():
+                Logger("x")
+            """
+        )
+
+        assert results == []
+
     def test_in_async_function_def(self):
         results = run(
             """\
             import logging
             async def test_thing():
                 logging.Logger("x")
+            """
+        )
+
+        assert results == []
+
+    def test_direct_in_async_function_def(self):
+        results = run(
+            """\
+            from logging import Logger
+            async def test_thing():
+                Logger("x")
             """
         )
 
