@@ -454,7 +454,8 @@ class TestLOG004:
         result = flake8_path.run_flake8()
 
         assert result.out_lines == [
-            "./example.py:2:1: LOG004 avoid logger.exception() outside of except clauses"
+            "./example.py:2:1: LOG004 avoid logger.exception() outside of "
+            + "except clauses"
         ]
 
     def test_module_call(self):
