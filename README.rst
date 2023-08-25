@@ -241,9 +241,9 @@ Corrected:
 LOG006 redundant ``exc_info`` argument for ``exception()``
 ----------------------------------------------------------
 
-The |exception()|__ method captures the exception automatically, making a truthy ``exc_info`` argument redundant.
+The |exception()2|__ method captures the exception automatically, making a truthy ``exc_info`` argument redundant.
 
-.. |exception()| replace:: ``exception()``
+.. |exception()2| replace:: ``exception()``
 __ https://docs.python.org/3/library/logging.html#logging.Logger.exception
 
 This rule detects ``exception()`` calls within exception handlers with an ``exc_info`` argument that is truthy or the captured exception object.
@@ -269,10 +269,10 @@ Corrected:
 LOG007 use ``error()`` instead of ``exception()`` with ``exc_info=False``
 -------------------------------------------------------------------------
 
-The |exception()|__ method captures the exception automatically.
+The |exception()3|__ method captures the exception automatically.
 Disabling this by setting ``exc_info=False`` is the same as using ``error()``, which is clearer and doesn’t need the ``exc_info`` argument.
 
-.. |exception()| replace:: ``exception()``
+.. |exception()3| replace:: ``exception()``
 __ https://docs.python.org/3/library/logging.html#logging.Logger.exception
 
 This rule detects ``exception()`` calls with an ``exc_info`` argument that is falsy.
