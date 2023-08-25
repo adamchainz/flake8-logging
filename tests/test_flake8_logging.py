@@ -690,3 +690,35 @@ class TestLOG005:
         )
 
         assert results == []
+
+    def test_logger_call_with_exc_info(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                int(x)
+            except ValueError as exc:
+                logger.error("Bad int", exc_info=exc)
+            """
+        )
+
+        assert results == [
+            (6, 4, "LOG005 use exception() within an exception handler"),
+        ]
+
+    def test_logger_call_with_exc_info_true(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                int(x)
+            except ValueError as exc:
+                logging.error("Bad int", exc_info=True)
+            """
+        )
+
+        assert results == [
+            (6, 4, "LOG005 use exception() within an exception handler"),
+        ]
