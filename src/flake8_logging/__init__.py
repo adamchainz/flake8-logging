@@ -72,6 +72,8 @@ LOG002_names = frozenset(
 LOG003 = "LOG003 extra key {} clashes with LogRecord attribute"
 LOG004 = "LOG004 avoid exception() outside of exception handlers"
 LOG005 = "LOG005 use exception() within an exception handler"
+LOG006 = "LOG006 redundant exc_info argument for exception()"
+LOG007 = "LOG007 use error() instead of exception() with exc_info=False"
 
 
 class Visitor(ast.NodeVisitor):
@@ -171,19 +173,11 @@ class Visitor(ast.NodeVisitor):
 
             for key, key_node in extra_keys:
                 if key in logrecord_attributes:
-                    if sys.version_info >= (3, 9):
+                    if isinstance(key_node, ast.keyword):
+                        lineno, col_offset = keyword_pos(key_node)
+                    else:
                         lineno = key_node.lineno
                         col_offset = key_node.col_offset
-                    else:
-                        if isinstance(key_node, ast.keyword):
-                            lineno = key_node.value.lineno
-                            # Educated guess
-                            col_offset = max(
-                                0, key_node.value.col_offset - 1 - len(key)
-                            )
-                        else:
-                            lineno = key_node.lineno
-                            col_offset = key_node.col_offset
 
                     self.errors.append(
                         (
@@ -193,11 +187,37 @@ class Visitor(ast.NodeVisitor):
                         )
                     )
 
-            # LOG004
-            if node.func.attr == "exception" and not self._current_except_handler():
-                self.errors.append(
-                    (node.lineno, node.col_offset, LOG004),
-                )
+            if node.func.attr == "exception":
+                handler = self._current_except_handler()
+
+                # LOG004
+                if not handler:
+                    self.errors.append(
+                        (node.lineno, node.col_offset, LOG004),
+                    )
+
+                if any((exc_info := kw).arg == "exc_info" for kw in node.keywords):
+                    # LOG006
+                    if (
+                        isinstance(exc_info.value, ast.Constant)
+                        and exc_info.value.value
+                    ) or (
+                        handler
+                        and isinstance(exc_info.value, ast.Name)
+                        and exc_info.value.id == handler.name
+                    ):
+                        self.errors.append(
+                            (*keyword_pos(exc_info), LOG006),
+                        )
+
+                    # LOG007
+                    elif (
+                        isinstance(exc_info.value, ast.Constant)
+                        and not exc_info.value.value
+                    ):
+                        self.errors.append(
+                            (*keyword_pos(exc_info), LOG007),
+                        )
 
             # LOG005
             elif node.func.attr == "error" and (
@@ -238,3 +258,14 @@ class Visitor(ast.NodeVisitor):
             elif isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
                 break
         return None
+
+
+def keyword_pos(node: ast.keyword) -> tuple[int, int]:
+    if sys.version_info >= (3, 9):
+        return (node.lineno, node.col_offset)
+    else:
+        # Educated guess
+        return (
+            node.value.lineno,
+            max(0, node.value.col_offset - 1 - len(node.arg)),
+        )

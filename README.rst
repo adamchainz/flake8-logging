@@ -218,7 +218,7 @@ Both methods log with the level ``ERROR``.
 .. |exception()| replace:: ``exception()``
 __ https://docs.python.org/3/library/logging.html#logging.Logger.exception
 
-This rule detects ``error()`` calls within exception handlers with an ``exc_info`` .
+This rule detects ``error()`` calls within exception handlers with an ``exc_info`` argument.
 
 Failing example:
 
@@ -237,3 +237,54 @@ Corrected:
         acme_api()
     except AcmeError:
         logger.exception("ACME API failed")
+
+LOG006 redundant ``exc_info`` argument for ``exception()``
+----------------------------------------------------------
+
+The |exception()|__ method captures the exception automatically, making a truthy ``exc_info`` argument redundant.
+
+.. |exception()| replace:: ``exception()``
+__ https://docs.python.org/3/library/logging.html#logging.Logger.exception
+
+This rule detects ``exception()`` calls within exception handlers with an ``exc_info`` argument that is truthy or the captured exception object.
+
+Failing example:
+
+.. code-block:: python
+
+    try:
+        acme_api()
+    except AcmeError:
+        logger.exception("ACME API failed", exc_info=True)
+
+Corrected:
+
+.. code-block:: python
+
+    try:
+        acme_api()
+    except AcmeError:
+        logger.exception("ACME API failed")
+
+LOG007 use ``error()`` instead of ``exception()`` with ``exc_info=False``
+-------------------------------------------------------------------------
+
+The |exception()|__ method captures the exception automatically.
+Disabling this by setting ``exc_info=False`` is the same as using ``error()``, which is clearer and doesn’t need the ``exc_info`` argument.
+
+.. |exception()| replace:: ``exception()``
+__ https://docs.python.org/3/library/logging.html#logging.Logger.exception
+
+This rule detects ``exception()`` calls with an ``exc_info`` argument that is falsy.
+
+Failing example:
+
+.. code-block:: python
+
+    logger.exception("Left phalange missing", exc_info=False)
+
+Corrected:
+
+.. code-block:: python
+
+    logger.exception("Left phalange missing")

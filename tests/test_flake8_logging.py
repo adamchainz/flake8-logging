@@ -722,3 +722,168 @@ class TestLOG005:
         assert results == [
             (6, 4, "LOG005 use exception() within an exception handler"),
         ]
+
+
+class TestLOG006:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+                try:
+                    1/0
+                except ZeroDivisionError:
+                    logging.exception("Oops", exc_info=True)
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:5:31: LOG006 redundant exc_info argument for exception()"
+        ]
+
+    def test_module_call_with_true(self):
+        results = run(
+            """\
+            import logging
+            try:
+                1/0
+            except ZeroDivisionError:
+                logging.exception("Oops", exc_info=True)
+            """
+        )
+
+        assert results == [
+            (5, 30, "LOG006 redundant exc_info argument for exception()"),
+        ]
+
+    def test_module_call_with_exc(self):
+        results = run(
+            """\
+            import logging
+            try:
+                1/0
+            except ZeroDivisionError as exc:
+                logging.exception("Oops", exc_info=exc)
+            """
+        )
+
+        assert results == [
+            (5, 30, "LOG006 redundant exc_info argument for exception()"),
+        ]
+
+    def test_module_call_with_different_exc(self):
+        results = run(
+            """\
+            import logging
+            try:
+                1/0
+            except ZeroDivisionError as exc:
+                exc2 = AttributeError("?")
+                logging.exception("Oops", exc_info=exc2)
+            """
+        )
+
+        assert results == []
+
+    def test_logger_call_with_true(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                1/0
+            except ZeroDivisionError:
+                logger.exception("Oops", exc_info=True)
+            """
+        )
+
+        assert results == [
+            (6, 29, "LOG006 redundant exc_info argument for exception()"),
+        ]
+
+    def test_logger_call_with_exc(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                1/0
+            except ZeroDivisionError as exc:
+                logger.exception("Oops", exc_info=exc)
+            """
+        )
+
+        assert results == [
+            (6, 29, "LOG006 redundant exc_info argument for exception()"),
+        ]
+
+
+class TestLOG007:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+                try:
+                    1/0
+                except ZeroDivisionError:
+                    logging.exception("Oops", exc_info=False)
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:5:31: LOG007 use error() instead of exception() with "
+            + "exc_info=False"
+        ]
+
+    def test_module_call_with_false(self):
+        results = run(
+            """\
+            import logging
+            try:
+                1/0
+            except ZeroDivisionError:
+                logging.exception("Oops", exc_info=False)
+            """
+        )
+
+        assert results == [
+            (5, 30, "LOG007 use error() instead of exception() with exc_info=False"),
+        ]
+
+    def test_module_call_with_0(self):
+        results = run(
+            """\
+            import logging
+            try:
+                1/0
+            except ZeroDivisionError:
+                logging.exception("Oops", exc_info=0)
+            """
+        )
+
+        assert results == [
+            (5, 30, "LOG007 use error() instead of exception() with exc_info=False"),
+        ]
+
+    def test_logger_call_with_false(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            try:
+                1/0
+            except ZeroDivisionError:
+                logger.exception("Oops", exc_info=False)
+            """
+        )
+
+        assert results == [
+            (6, 29, "LOG007 use error() instead of exception() with exc_info=False"),
+        ]
