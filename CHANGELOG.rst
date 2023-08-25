@@ -2,6 +2,9 @@
 Changelog
 =========
 
+1.1.0 (2023-08-25)
+------------------
+
 * LOG001: Avoid detecting inside function definitions when using ``Logger`` directly.
 
 * Add rule LOG005 that recomends ``exception()`` over ``error()`` within ``except`` clauses.
