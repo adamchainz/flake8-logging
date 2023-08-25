@@ -198,7 +198,7 @@ Failing example:
     if response is None:
         logging.exception("ACME failed")
 
-Correct example:
+Corrected:
 
 .. code-block:: python
 
