@@ -70,8 +70,8 @@ LOG002_names = frozenset(
     )
 )
 LOG003 = "LOG003 extra key {} clashes with LogRecord attribute"
-LOG004 = "LOG004 avoid logger.exception() outside of except clauses"
-LOG005 = "LOG005 use exception() within an except clause"
+LOG004 = "LOG004 avoid logger.exception() outside of exception handlers"
+LOG005 = "LOG005 use exception() within an exception handler"
 
 
 class Visitor(ast.NodeVisitor):
