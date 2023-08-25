@@ -6,6 +6,10 @@ Changelog
 
 * Add rule LOG005 that recomends ``exception()`` over ``error()`` within ``except`` clauses.
 
+* Add rule LOG006 that detects redundant ``exc_info`` arguments in calls to ``exception()``.
+
+* Add rule LOG007 that detects ``exception()`` calls with falsy ``exc_info`` arguments, which are better written as ``error()``.
+
 1.0.2 (2023-08-24)
 ------------------
 
