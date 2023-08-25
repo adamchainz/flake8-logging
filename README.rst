@@ -321,3 +321,28 @@ Corrected:
 .. code-block:: python
 
     logger.warning("Cheesy puns incoming")
+
+LOG009 ``WARN`` is undocumented, use ``WARNING`` instead
+--------------------------------------------------------
+
+The ``WARN`` constant is an undocumented alias for |WARNING|__.
+Whilst it’s not deprecated, it’s not mentioned at all in the documentation, so the documented ``WARNING`` should always be used instead.
+
+.. |WARNING| replace:: ``WARNING``
+__ https://docs.python.org/3/library/logging.html#logging-levels
+
+This rule detects any import or access of ``WARN``.
+
+Failing example:
+
+.. code-block:: python
+
+    import logging
+    logging.WARN
+
+Corrected:
+
+.. code-block:: python
+
+    import logging
+    logging.WARNING
