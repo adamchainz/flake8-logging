@@ -165,7 +165,7 @@ Corrected:
     response = acme_api()
     logger.info("ACME Response", extra={"response_msg": response.msg})
 
-LOG004 avoid ``logger.exception()`` outside of ``except`` clauses
+LOG004 avoid ``logger.exception()`` outside of exception handlers
 -----------------------------------------------------------------
 
 The |exception() documentation|__ states:
@@ -208,7 +208,7 @@ Corrected:
     if response is None:
         logging.error("ACME failed")
 
-LOG005 use ``exception()`` within an ``except`` clause
+LOG005 use ``exception()`` within an exception handler
 ------------------------------------------------------
 
 Within an exception handler, the |exception()|__ method is preferable over ``logger.error()``.

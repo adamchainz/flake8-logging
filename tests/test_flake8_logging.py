@@ -455,7 +455,7 @@ class TestLOG004:
 
         assert result.out_lines == [
             "./example.py:2:1: LOG004 avoid logger.exception() outside of "
-            + "except clauses"
+            + "exception handlers"
         ]
 
     def test_module_call(self):
@@ -467,7 +467,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (2, 0, "LOG004 avoid logger.exception() outside of except clauses")
+            (2, 0, "LOG004 avoid logger.exception() outside of exception handlers")
         ]
 
     def test_module_call_in_function_def(self):
@@ -480,7 +480,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (3, 4, "LOG004 avoid logger.exception() outside of except clauses")
+            (3, 4, "LOG004 avoid logger.exception() outside of exception handlers")
         ]
 
     def test_module_call_wrapped_in_function_def(self):
@@ -498,7 +498,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (6, 8, "LOG004 avoid logger.exception() outside of except clauses")
+            (6, 8, "LOG004 avoid logger.exception() outside of exception handlers")
         ]
 
     def test_module_call_ok(self):
@@ -538,7 +538,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (3, 0, "LOG004 avoid logger.exception() outside of except clauses")
+            (3, 0, "LOG004 avoid logger.exception() outside of exception handlers")
         ]
 
     def test_logger_call_in_function_def(self):
@@ -552,7 +552,7 @@ class TestLOG004:
         )
 
         assert results == [
-            (4, 4, "LOG004 avoid logger.exception() outside of except clauses")
+            (4, 4, "LOG004 avoid logger.exception() outside of exception handlers")
         ]
 
     def test_logger_call_ok(self):
@@ -587,7 +587,7 @@ class TestLOG005:
         result = flake8_path.run_flake8()
 
         assert result.out_lines == [
-            "./example.py:5:5: LOG005 use exception() within an except clause"
+            "./example.py:5:5: LOG005 use exception() within an exception handler"
         ]
 
     def test_module_call_with_exc_info(self):
@@ -602,7 +602,7 @@ class TestLOG005:
         )
 
         assert results == [
-            (5, 4, "LOG005 use exception() within an except clause"),
+            (5, 4, "LOG005 use exception() within an exception handler"),
         ]
 
     def test_module_call_with_exc_info_true(self):
@@ -617,7 +617,7 @@ class TestLOG005:
         )
 
         assert results == [
-            (5, 4, "LOG005 use exception() within an except clause"),
+            (5, 4, "LOG005 use exception() within an exception handler"),
         ]
 
     def test_module_call_with_exc_info_1(self):
@@ -632,7 +632,7 @@ class TestLOG005:
         )
 
         assert results == [
-            (5, 4, "LOG005 use exception() within an except clause"),
+            (5, 4, "LOG005 use exception() within an exception handler"),
         ]
 
     def test_module_call_with_exc_info_string(self):
@@ -647,7 +647,7 @@ class TestLOG005:
         )
 
         assert results == [
-            (5, 4, "LOG005 use exception() within an except clause"),
+            (5, 4, "LOG005 use exception() within an exception handler"),
         ]
 
     def test_module_call_without_exc_info(self):
@@ -662,7 +662,7 @@ class TestLOG005:
         )
 
         assert results == [
-            (5, 4, "LOG005 use exception() within an except clause"),
+            (5, 4, "LOG005 use exception() within an exception handler"),
         ]
 
     def test_module_call_with_false_exc_info(self):
