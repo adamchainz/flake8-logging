@@ -207,3 +207,33 @@ Corrected:
     response = acme_api()
     if response is None:
         logging.error("ACME failed")
+
+LOG005 use ``exception()`` within an ``except`` clause
+------------------------------------------------------
+
+Within an exception handler, the |exception()|__ method is preferable over ``logger.error()``.
+The ``exception()`` method captures the exception automatically, whilst ``error()`` needs it to be passed explicitly in the ``exc_info`` argument.
+Both methods log with the level ``ERROR``.
+
+.. |exception()| replace:: ``exception()``
+__ https://docs.python.org/3/library/logging.html#logging.Logger.exception
+
+This rule detects ``error()`` calls within exception handlers with an ``exc_info`` .
+
+Failing example:
+
+.. code-block:: python
+
+    try:
+        acme_api()
+    except AcmeError as exc:
+        logger.error("ACME API failed", exc_info=exc)
+
+Corrected:
+
+.. code-block:: python
+
+    try:
+        acme_api()
+    except AcmeError:
+        logger.exception("ACME API failed")

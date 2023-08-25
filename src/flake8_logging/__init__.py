@@ -71,6 +71,7 @@ LOG002_names = frozenset(
 )
 LOG003 = "LOG003 extra key {} clashes with LogRecord attribute"
 LOG004 = "LOG004 avoid logger.exception() outside of except clauses"
+LOG005 = "LOG005 use exception() within an except clause"
 
 
 class Visitor(ast.NodeVisitor):
@@ -193,17 +194,33 @@ class Visitor(ast.NodeVisitor):
                     )
 
             # LOG004
-            if node.func.attr == "exception":
-                within_except = False
-                for parent in reversed(self._stack):
-                    if isinstance(parent, ast.ExceptHandler):
-                        within_except = True
-                        break
-                    elif isinstance(parent, (ast.AsyncFunctionDef, ast.FunctionDef)):
-                        break
-                if not within_except:
+            if node.func.attr == "exception" and not self._current_except_handler():
+                self.errors.append(
+                    (node.lineno, node.col_offset, LOG004),
+                )
+
+            # LOG005
+            elif node.func.attr == "error" and (
+                handler := self._current_except_handler()
+            ):
+                rewritable = False
+                if any((exc_info := kw).arg == "exc_info" for kw in node.keywords):
+                    if (
+                        isinstance(exc_info.value, ast.Constant)
+                        and exc_info.value.value
+                    ):
+                        rewritable = True
+                    elif (
+                        isinstance(exc_info.value, ast.Name)
+                        and exc_info.value.id == handler.name
+                    ):
+                        rewritable = True
+                else:
+                    rewritable = True
+
+                if rewritable:
                     self.errors.append(
-                        (node.lineno, node.col_offset, LOG004),
+                        (node.lineno, node.col_offset, LOG005),
                     )
 
         self.generic_visit(node)
@@ -213,3 +230,11 @@ class Visitor(ast.NodeVisitor):
             isinstance(parent, (ast.FunctionDef, ast.AsyncFunctionDef))
             for parent in self._stack
         )
+
+    def _current_except_handler(self) -> ast.ExceptHandler | None:
+        for node in reversed(self._stack):
+            if isinstance(node, ast.ExceptHandler):
+                return node
+            elif isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
+                break
+        return None
