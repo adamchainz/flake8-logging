@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Add rule LOG009 that detects use of the undocumented ``WARN`` constant.
+
 1.1.0 (2023-08-25)
 ------------------
 
