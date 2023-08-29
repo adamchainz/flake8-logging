@@ -150,6 +150,7 @@ Failing example:
 .. code-block:: python
 
     import logging
+
     logger = logging.getLogger(__name__)
 
     response = acme_api()
@@ -160,6 +161,7 @@ Corrected:
 .. code-block:: python
 
     import logging
+
     logger = logging.getLogger(__name__)
 
     response = acme_api()
@@ -338,6 +340,7 @@ Failing example:
 .. code-block:: python
 
     import logging
+
     logging.WARN
 
 Corrected:
@@ -345,4 +348,5 @@ Corrected:
 .. code-block:: python
 
     import logging
+
     logging.WARNING
