@@ -381,3 +381,48 @@ Corrected:
         shuffle_deck()
     except Exception:
         logger.exception("Failed to shuffle deck")
+
+LOG011 avoid pre-formatting log messages
+----------------------------------------
+
+Logger methods support string formatting for `logging variable data <https://docs.python.org/3/howto/logging.html#logging-variable-data>`__, such as:
+
+.. code-block:: python
+
+    logger.info("Couldn’t chop %s", vegetable)
+
+Formatting is skipped if the message isn’t be logged due to its level being lower than the configured one.
+
+Passing a logger method a pre-formatted string, such as from an f-string, has no such optimization.
+Time is always spent on formatting when the message won’t be logged.
+
+This rule detects logger method calls with a first argument that is one of:
+
+* an f-string
+* a call to ``str.format()``
+* a string used with the modulus operator (``%``)
+* a concatenation of strings with non-strings
+
+Failing examples:
+
+.. code-block:: python
+
+    logging.error(f"Couldn’t chop {vegetable}")
+
+.. code-block:: python
+
+    logging.error("Couldn’t chop {}".format(vegetable))
+
+.. code-block:: python
+
+    logging.error("Couldn’t chop %s" % (vegetable,))
+
+.. code-block:: python
+
+    logging.error("Couldn’t chop " + vegetable)
+
+Corrected:
+
+.. code-block:: python
+
+    logging.error("Couldn’t chop %s", vegetable)

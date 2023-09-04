@@ -6,6 +6,8 @@ Changelog
 
 * Add rule LOG010 that detects passing calls to ``exception()`` passing a handled exception as the first argument.
 
+* Add rule LOG011 that detects pre-formatted log messages.
+
 1.1.0 (2023-08-25)
 ------------------
 
