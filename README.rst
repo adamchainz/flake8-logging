@@ -391,10 +391,13 @@ Logger methods support string formatting for `logging variable data <https://doc
 
     logger.info("Couldn’t chop %s", vegetable)
 
-Formatting is skipped if the message isn’t be logged due to its level being lower than the configured one.
+Formatting is skipped if the message isn’t logged due to its level being lower than the configured one.
 
-Passing a logger method a pre-formatted string, such as from an f-string, has no such optimization.
-Time is always spent on formatting when the message won’t be logged.
+Using a pre-formatted string, such as from an f-string, has no such optimization.
+Time is always spent on formatting even when the message won’t be logged.
+
+Additionally, error-collecting tools can group messages based on their unformatted messages.
+With pre-formatted messages, grouping can only be done with heuristics, which may be inaccurate.
 
 This rule detects logger method calls with a ``msg`` argument that is one of:
 
