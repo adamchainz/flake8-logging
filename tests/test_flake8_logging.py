@@ -1031,3 +1031,137 @@ class TestLOG009:
         assert results == [
             (*pos, "LOG009 WARN is undocumented, use WARNING instead"),
         ]
+
+
+class TestLOG010:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+
+                try:
+                    ...
+                except Exception as exc:
+                    logging.exception(exc)
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:6:23: LOG010 exception() does not take an exception"
+        ]
+
+    def test_module_call(self):
+        results = run(
+            """\
+            import logging
+
+            try:
+                ...
+            except Exception as exc:
+                logging.exception(exc)
+            """
+        )
+
+        assert results == [
+            (6, 22, "LOG010 exception() does not take an exception"),
+        ]
+
+    def test_module_call_multiline(self):
+        results = run(
+            """\
+            import logging
+
+            try:
+                ...
+            except Exception as exc:
+                logging.exception(
+                    exc,
+                )
+            """
+        )
+
+        assert results == [
+            (7, 8, "LOG010 exception() does not take an exception"),
+        ]
+
+    def test_module_call_no_args(self):
+        results = run(
+            """\
+            import logging
+
+            try:
+                ...
+            except Exception as exc:
+                logging.exception()
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_second_arg(self):
+        results = run(
+            """\
+            import logging
+
+            try:
+                ...
+            except Exception as exc:
+                logging.exception("Saw %s", exc)
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_not_exc_handler_name(self):
+        results = run(
+            """\
+            import logging
+
+            try:
+                ...
+            except Exception:
+                exc = "Uh-oh"
+                logging.exception(exc)
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_in_function_def(self):
+        results = run(
+            """\
+            import logging
+
+            try:
+                ...
+            except Exception as exc:
+                def later():
+                    exc = "message"
+                    logging.exception(exc)
+            """
+        )
+
+        assert results == [
+            (8, 8, "LOG004 avoid exception() outside of exception handlers")
+        ]
+
+    def test_logger_call(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+
+            try:
+                ...
+            except Exception as exc:
+                logger.exception(exc)
+            """
+        )
+
+        assert results == [
+            (7, 21, "LOG010 exception() does not take an exception"),
+        ]

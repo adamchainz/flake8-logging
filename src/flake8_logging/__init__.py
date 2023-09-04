@@ -78,6 +78,7 @@ LOG006 = "LOG006 redundant exc_info argument for exception()"
 LOG007 = "LOG007 use error() instead of exception() with exc_info=False"
 LOG008 = "LOG008 warn() is deprecated, use warning() instead"
 LOG009 = "LOG009 WARN is undocumented, use WARNING instead"
+LOG010 = "LOG010 exception() does not take an exception"
 
 
 class Visitor(ast.NodeVisitor):
@@ -273,6 +274,18 @@ class Visitor(ast.NodeVisitor):
                     self.errors.append(
                         (node.lineno, node.col_offset, LOG005),
                     )
+
+            # LOG010
+            if (
+                node.func.attr == "exception"
+                and len(node.args) >= 1
+                and isinstance(node.args[0], ast.Name)
+                and (exc_handler := self._current_except_handler()) is not None
+                and node.args[0].id == exc_handler.name
+            ):
+                self.errors.append(
+                    (node.args[0].lineno, node.args[0].col_offset, LOG010)
+                )
 
         self.generic_visit(node)
 
