@@ -4,6 +4,8 @@ Changelog
 
 * Add rule LOG009 that detects use of the undocumented ``WARN`` constant.
 
+* Add rule LOG010 that detects passing calls to ``exception()`` passing a handled exception as the first argument.
+
 1.1.0 (2023-08-25)
 ------------------
 

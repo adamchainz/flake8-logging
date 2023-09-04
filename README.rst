@@ -350,3 +350,34 @@ Corrected:
     import logging
 
     logging.WARNING
+
+LOG010 ``exception()`` does not take an exception
+-------------------------------------------------
+
+Like other logger methods, the |exception()4|__ method takes a string as its first argument.
+A common misunderstanding is to pass it an exception instead.
+Doing so is redundant, as ``exception()`` will already capture the exception object.
+It can also lead to unclear log messages, as the logger will call ``str()`` on the exception, which doesn’t always produce a sensible message.
+
+.. |exception()4| replace:: ``exception()``
+__ https://docs.python.org/3/library/logging.html#logging.Logger.exception
+
+This rule detects ``exception()`` calls with a first argument that is the current exception handler’s capture variable.
+
+Failing example:
+
+.. code-block:: python
+
+    try:
+        shuffle_deck()
+    except Exception as exc:
+        logger.exception(exc)
+
+Corrected:
+
+.. code-block:: python
+
+    try:
+        shuffle_deck()
+    except Exception:
+        logger.exception("Failed to shuffle deck")
