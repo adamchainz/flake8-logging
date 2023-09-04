@@ -396,7 +396,7 @@ Formatting is skipped if the message isn’t be logged due to its level being lo
 Passing a logger method a pre-formatted string, such as from an f-string, has no such optimization.
 Time is always spent on formatting when the message won’t be logged.
 
-This rule detects logger method calls with a first argument that is one of:
+This rule detects logger method calls with a ``msg`` argument that is one of:
 
 * an f-string
 * a call to ``str.format()``

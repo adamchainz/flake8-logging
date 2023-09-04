@@ -300,6 +300,7 @@ class Visitor(ast.NodeVisitor):
                     and len(node.args) >= 1
                     and (msg_arg := node.args[0])
                 )
+                or any((msg_arg := k.value) for k in node.keywords if k.arg == "msg")
             ) and (
                 isinstance(msg_arg, ast.JoinedStr)
                 or (
