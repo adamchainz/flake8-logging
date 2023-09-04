@@ -79,6 +79,7 @@ LOG007 = "LOG007 use error() instead of exception() with exc_info=False"
 LOG008 = "LOG008 warn() is deprecated, use warning() instead"
 LOG009 = "LOG009 WARN is undocumented, use WARNING instead"
 LOG010 = "LOG010 exception() does not take an exception"
+LOG011 = "LOG011 avoid pre-formatting log messages"
 
 
 class Visitor(ast.NodeVisitor):
@@ -287,6 +288,40 @@ class Visitor(ast.NodeVisitor):
                     (node.args[0].lineno, node.args[0].col_offset, LOG010)
                 )
 
+            # LOG011
+            if (
+                (
+                    node.func.attr == "log"
+                    and len(node.args) >= 2
+                    and (msg_arg := node.args[1])
+                )
+                or (
+                    node.func.attr != "log"
+                    and len(node.args) >= 1
+                    and (msg_arg := node.args[0])
+                )
+            ) and (
+                isinstance(msg_arg, ast.JoinedStr)
+                or (
+                    isinstance(msg_arg, ast.Call)
+                    and isinstance(msg_arg.func, ast.Attribute)
+                    and isinstance(msg_arg.func.value, ast.Constant)
+                    and isinstance(msg_arg.func.value.value, str)
+                    and msg_arg.func.attr == "format"
+                )
+                or (
+                    isinstance(msg_arg, ast.BinOp)
+                    and isinstance(msg_arg.op, ast.Mod)
+                    and isinstance(msg_arg.left, ast.Constant)
+                    and isinstance(msg_arg.left.value, str)
+                )
+                or (
+                    isinstance(msg_arg, ast.BinOp)
+                    and is_add_chain_with_non_str(msg_arg)
+                )
+            ):
+                self.errors.append((msg_arg.lineno, msg_arg.col_offset, LOG011))
+
         self.generic_visit(node)
 
     def _at_module_level(self) -> bool:
@@ -313,3 +348,17 @@ def keyword_pos(node: ast.keyword) -> tuple[int, int]:
             node.value.lineno,
             max(0, node.value.col_offset - 1 - len(node.arg)),
         )
+
+
+def is_add_chain_with_non_str(node: ast.BinOp) -> bool:
+    if not isinstance(node.op, ast.Add):
+        return False
+
+    for side in (node.left, node.right):
+        if isinstance(side, ast.BinOp):
+            if is_add_chain_with_non_str(side):
+                return True
+        elif not (isinstance(side, ast.Constant) and isinstance(side.value, str)):
+            return True
+
+    return False

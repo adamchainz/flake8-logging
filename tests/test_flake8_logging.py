@@ -1165,3 +1165,246 @@ class TestLOG010:
         assert results == [
             (7, 21, "LOG010 exception() does not take an exception"),
         ]
+
+
+class TestLOG011:
+    def test_integration(self, flake8_path):
+        (flake8_path / "example.py").write_text(
+            dedent(
+                """\
+                import logging
+
+                logging.info(f"Hi {name}")
+                """
+            )
+        )
+
+        result = flake8_path.run_flake8()
+
+        assert result.out_lines == [
+            "./example.py:3:14: LOG011 avoid pre-formatting log messages"
+        ]
+
+    def test_module_call(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info(f"Hi {name}")
+            """
+        )
+
+        assert results == [
+            (3, 13, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_module_call_multiline(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info(
+                f"Hi {name}"
+            )
+            """
+        )
+
+        assert results == [
+            (4, 4, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_module_call_log(self):
+        results = run(
+            """\
+            import logging
+
+            logging.log(
+                logging.INFO,
+                f"Hi {name}",
+            )
+            """
+        )
+
+        assert results == [
+            (5, 4, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_module_call_str_format(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info("Hi {}".format(name))
+            """
+        )
+
+        assert results == [
+            (3, 13, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_module_call_str_doormat(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info("Hi {}".doormat(name))
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_mod_format(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info("Hi %s" % (name,))
+            """
+        )
+
+        assert results == [
+            (3, 13, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_module_call_concatenation(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info("Hi " + name + "!")
+            """
+        )
+
+        assert results == [
+            (3, 13, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_module_call_concatenation_multiple(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info("Hi " + name)
+            """
+        )
+
+        assert results == [
+            (3, 13, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_module_call_concatenation_non_string(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info("Hi " + 1)
+            """
+        )
+
+        assert results == [
+            (3, 13, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_module_call_concatenation_all_strings(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info("Hi " + "name")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_non_addition(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info("not" - "valid")
+            """
+        )
+
+        assert results == []
+
+    def test_logger_call(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+
+            logger.info(f"Hi {name}")
+            """
+        )
+
+        assert results == [
+            (4, 12, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_logger_call_str_format(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+
+            logger.info("Hi {name}".format(name=name))
+            """
+        )
+
+        assert results == [
+            (4, 12, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_logger_call_mod_format(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+
+            logger.info("Hi %(name)s" % {"name": name})
+            """
+        )
+
+        assert results == [
+            (4, 12, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_logger_call_concatenation(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+
+            logger.info("Hi " + name)
+            """
+        )
+
+        assert results == [
+            (4, 12, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_logger_call_concatenation_multiple(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+
+            logger.info("Hi " + name + "!")
+            """
+        )
+
+        assert results == [
+            (4, 12, "LOG011 avoid pre-formatting log messages"),
+        ]
+
+    def test_logger_call_concatenation_all_strings(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+
+            logger.info("Hi " + "name" + "!")
+            """
+        )
+
+        assert results == []
