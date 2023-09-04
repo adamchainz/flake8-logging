@@ -401,6 +401,17 @@ class TestLOG003:
             (2, 30, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
+    def test_module_call_dict_constructor_unpack(self):
+        results = run(
+            """\
+            import logging
+            more = {"msg": "Ho"}
+            logging.info("Hi", extra=dict(**more))
+            """
+        )
+
+        assert results == []
+
     def test_logger_call(self):
         results = run(
             """\

@@ -5,6 +5,7 @@ import sys
 from importlib.metadata import version
 from typing import Any
 from typing import Generator
+from typing import Sequence
 
 
 class Plugin:
@@ -182,7 +183,7 @@ class Visitor(ast.NodeVisitor):
                 self.errors.append((node.lineno, node.col_offset, LOG008))
 
             # LOG003
-            extra_keys = ()
+            extra_keys: Sequence[tuple[str, ast.AST]] = ()
             if any((extra_node := kw).arg == "extra" for kw in node.keywords):
                 if isinstance(extra_node.value, ast.Dict):
                     extra_keys = [
@@ -195,7 +196,11 @@ class Visitor(ast.NodeVisitor):
                     and isinstance(extra_node.value.func, ast.Name)
                     and extra_node.value.func.id == "dict"
                 ):
-                    extra_keys = [(k.arg, k) for k in extra_node.value.keywords]
+                    extra_keys = [
+                        (k.arg, k)
+                        for k in extra_node.value.keywords
+                        if k.arg is not None
+                    ]
 
             for key, key_node in extra_keys:
                 if key in logrecord_attributes:
@@ -271,7 +276,7 @@ class Visitor(ast.NodeVisitor):
 
         self.generic_visit(node)
 
-    def _at_module_level(self):
+    def _at_module_level(self) -> bool:
         return any(
             isinstance(parent, (ast.FunctionDef, ast.AsyncFunctionDef))
             for parent in self._stack
