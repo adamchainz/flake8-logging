@@ -1327,6 +1327,19 @@ class TestLOG011:
 
         assert results == []
 
+    def test_module_call_keyword(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info(msg=f"Hi {name}")
+            """
+        )
+
+        assert results == [
+            (3, 17, "LOG011 avoid pre-formatting log messages"),
+        ]
+
     def test_logger_call(self):
         results = run(
             """\
@@ -1408,3 +1421,17 @@ class TestLOG011:
         )
 
         assert results == []
+
+    def test_logger_call_keyword(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+
+            logger.info(msg=f"Hi {name}")
+            """
+        )
+
+        assert results == [
+            (4, 16, "LOG011 avoid pre-formatting log messages"),
+        ]
