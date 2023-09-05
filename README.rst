@@ -429,3 +429,57 @@ Corrected:
 .. code-block:: python
 
     logging.error("Couldn’t chop %s", vegetable)
+
+LOG012 formatting error: ``<n>`` ``<type>`` placeholders but ``<m>`` arguments
+------------------------------------------------------------------------------
+
+Logger methods support several string formatting options for messages.
+If there’s a mismatch between the number of parameters in the message and those provided, the call will error:
+
+.. code-block:: pycon
+
+    >>> logging.info("Sent %s to %s", letter)
+    --- Logging error ---
+    Traceback (most recent call last):
+      File "/.../logging/__init__.py", line 1110, in emit
+        msg = self.format(record)
+              ^^^^^^^^^^^^^^^^^^^
+    ...
+
+      File "/.../logging/__init__.py", line 377, in getMessage
+        msg = msg % self.args
+              ~~~~^~~~~~~~~~~
+    TypeError: not enough arguments for format string
+    Call stack:
+      File "<stdin>", line 1, in <module>
+    Message: ' %s to %s'
+    Arguments: ('Red Letter',)
+
+This will only happen when the logger is enabled since loggers don’t perform string formatting when disabled.
+Thus a configuration change can reveal such errors.
+
+Additionally, if no arguments are provided, parametrized messages are silently unformatted:
+
+.. code-block:: pycon
+
+    >>> logging.info("Sent %s to %s")
+    INFO:root:Sent %s to %s
+
+This rule detects mismatches between the number of message parameters and those provided.
+It only supports ``%``-style formatting at the moment.
+
+Failing examples:
+
+.. code-block:: python
+
+    logging.info("Blending %s")
+
+.. code-block:: python
+
+    logging.info("Blending %s", fruit.name, fruit.size)
+
+Corrected:
+
+.. code-block:: python
+
+    logging.info("Blending %s of size %r", fruit.name, fruit.size)
