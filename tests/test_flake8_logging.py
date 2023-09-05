@@ -24,20 +24,14 @@ def flake8_path(flake8_path):
     yield flake8_path
 
 
-def run(source: str) -> list[tuple[int, int, str]]:
-    tree = ast.parse(dedent(source))
-    return [(line, col, msg) for (line, col, msg, type_) in Plugin(tree).run()]
+class TestIntegration:
+    def test_version(self, flake8_path):
+        result = flake8_path.run_flake8(["--version"])
+        version_regex = r"flake8-logging:( )*" + version("flake8-logging")
+        unwrapped = "".join(result.out_lines)
+        assert re.search(version_regex, unwrapped)
 
-
-def test_version(flake8_path):
-    result = flake8_path.run_flake8(["--version"])
-    version_regex = r"flake8-logging:( )*" + version("flake8-logging")
-    unwrapped = "".join(result.out_lines)
-    assert re.search(version_regex, unwrapped)
-
-
-class TestLOG001:
-    def test_integration(self, flake8_path):
+    def test_log001(self, flake8_path):
         (flake8_path / "example.py").write_text(
             dedent(
                 """\
@@ -53,6 +47,13 @@ class TestLOG001:
             "./example.py:2:1: LOG001 use logging.getLogger() to instantiate loggers"
         ]
 
+
+def run(source: str) -> list[tuple[int, int, str]]:
+    tree = ast.parse(dedent(source))
+    return [(line, col, msg) for (line, col, msg, type_) in Plugin(tree).run()]
+
+
+class TestLOG001:
     def test_attr(self):
         results = run(
             """\
@@ -178,22 +179,6 @@ class TestLOG001:
 
 
 class TestLOG002:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-                logging.getLogger(__file__)
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:2:19: LOG002 use __name__ with getLogger()"
-        ]
-
     def test_attr(self):
         results = run(
             """\
@@ -257,22 +242,6 @@ class TestLOG002:
 
 
 class TestLOG003:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-                logging.info("Hi", extra={"msg": "Ho"})
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:2:27: LOG003 extra key 'msg' clashes with LogRecord attribute"
-        ]
-
     def test_module_call(self):
         results = run(
             """\
@@ -453,22 +422,6 @@ class TestLOG003:
 
 
 class TestLOG004:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-                logging.exception("Hi")
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:2:1: LOG004 avoid exception() outside of exception handlers"
-        ]
-
     def test_module_call(self):
         results = run(
             """\
@@ -582,25 +535,6 @@ class TestLOG004:
 
 
 class TestLOG005:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-                try:
-                    int(x)
-                except ValueError as exc:
-                    logging.error("Bad int", exc_info=exc)
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:5:5: LOG005 use exception() within an exception handler"
-        ]
-
     def test_module_call_with_exc_info(self):
         results = run(
             """\
@@ -737,25 +671,6 @@ class TestLOG005:
 
 
 class TestLOG006:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-                try:
-                    1/0
-                except ZeroDivisionError:
-                    logging.exception("Oops", exc_info=True)
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:5:31: LOG006 redundant exc_info argument for exception()"
-        ]
-
     def test_module_call_with_true(self):
         results = run(
             """\
@@ -834,26 +749,6 @@ class TestLOG006:
 
 
 class TestLOG007:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-                try:
-                    1/0
-                except ZeroDivisionError:
-                    logging.exception("Oops", exc_info=False)
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:5:31: LOG007 use error() instead of exception() with "
-            + "exc_info=False"
-        ]
-
     def test_module_call_with_false(self):
         results = run(
             """\
@@ -902,22 +797,6 @@ class TestLOG007:
 
 
 class TestLOG008:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-                logging.warn("Squawk")
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:2:1: LOG008 warn() is deprecated, use warning() instead"
-        ]
-
     def test_module_call(self):
         results = run(
             """\
@@ -945,22 +824,6 @@ class TestLOG008:
 
 
 class TestLOG009:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-                logging.WARN
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:2:1: LOG009 WARN is undocumented, use WARNING instead"
-        ]
-
     def test_access(self):
         results = run(
             """\
@@ -1034,26 +897,6 @@ class TestLOG009:
 
 
 class TestLOG010:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-
-                try:
-                    ...
-                except Exception as exc:
-                    logging.exception(exc)
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:6:23: LOG010 exception() does not take an exception"
-        ]
-
     def test_module_call(self):
         results = run(
             """\
@@ -1168,23 +1011,6 @@ class TestLOG010:
 
 
 class TestLOG011:
-    def test_integration(self, flake8_path):
-        (flake8_path / "example.py").write_text(
-            dedent(
-                """\
-                import logging
-
-                logging.info(f"Hi {name}")
-                """
-            )
-        )
-
-        result = flake8_path.run_flake8()
-
-        assert result.out_lines == [
-            "./example.py:3:14: LOG011 avoid pre-formatting log messages"
-        ]
-
     def test_module_call(self):
         results = run(
             """\
