@@ -430,8 +430,8 @@ Corrected:
 
     logging.error("Couldn’t chop %s", vegetable)
 
-LOG012 formatting error: ``<n>`` ``<type>`` placeholders but ``<m>`` arguments
-------------------------------------------------------------------------------
+LOG012 formatting error: ``<n>`` ``<style>`` placeholders but ``<m>`` arguments
+-------------------------------------------------------------------------------
 
 Logger methods support several string formatting options for messages.
 If there’s a mismatch between the number of parameters in the message and those provided, the call will error:

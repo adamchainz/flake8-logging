@@ -101,7 +101,7 @@ LOG008 = "LOG008 warn() is deprecated, use warning() instead"
 LOG009 = "LOG009 WARN is undocumented, use WARNING instead"
 LOG010 = "LOG010 exception() does not take an exception"
 LOG011 = "LOG011 avoid pre-formatting log messages"
-LOG012 = "LOG012 formatting error: {n} {type} placeholder{ns} but {m} argument{ms}"
+LOG012 = "LOG012 formatting error: {n} {style} placeholder{ns} but {m} argument{ms}"
 
 
 class Visitor(ast.NodeVisitor):
@@ -365,7 +365,7 @@ class Visitor(ast.NodeVisitor):
                             LOG012.format(
                                 n=placeholder_count,
                                 ns="s" if placeholder_count != 1 else "",
-                                type="%",
+                                style="%",
                                 m=arg_count,
                                 ms="s" if arg_count != 1 else "",
                             ),
