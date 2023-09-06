@@ -350,9 +350,6 @@ class Visitor(ast.NodeVisitor):
                 not msg_arg_kwarg
                 and isinstance(msg_arg, ast.Constant)
                 and isinstance(msg_arg.value, str)
-                # TODO: formats: %(name)s , {}, ${}
-                and "%(" not in msg_arg.value
-                and "{" not in msg_arg.value
             ):
                 placeholder_count = sum(
                     1 + (m["minwidth"] == "*") + (m["precision"] == ".*")
@@ -360,7 +357,7 @@ class Visitor(ast.NodeVisitor):
                 )
                 arg_count = len(node.args) - 1 - (node.func.attr == "log")
 
-                if placeholder_count != arg_count:
+                if placeholder_count > 0 and placeholder_count != arg_count:
                     self.errors.append(
                         (
                             msg_arg.lineno,

@@ -1289,6 +1289,7 @@ class TestLOG012:
         ]
 
     def test_module_call_mod_args_0_1(self):
+        # Presume another style is in use
         results = run(
             """\
             import logging
@@ -1296,9 +1297,7 @@ class TestLOG012:
             """
         )
 
-        assert results == [
-            (2, 13, "LOG012 formatting error: 0 %s placeholders but 1 argument"),
-        ]
+        assert results == []
 
     def test_module_call_mod_args_2_1_minwidth(self):
         results = run(
@@ -1348,7 +1347,7 @@ class TestLOG012:
             (2, 26, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
         ]
 
-    def test_module_call_kwarg(self):
+    def test_module_call_mod_kwarg(self):
         results = run(
             """\
             import logging
@@ -1358,11 +1357,41 @@ class TestLOG012:
 
         assert results == []
 
-    def test_module_call_log_kwarg(self):
+    def test_module_call_log_mod_kwarg(self):
         results = run(
             """\
             import logging
             logging.log(logging.INFO, msg="Blending %s")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_named(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %(fruit)s")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_strformat(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending {}")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_template(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending $fruit")
             """
         )
 
