@@ -348,12 +348,12 @@ class Visitor(ast.NodeVisitor):
             # LOG012
             if (
                 not msg_arg_kwarg
-                and isinstance(msg_arg, ast.Constant)
-                and isinstance(msg_arg.value, str)
+                and msg_arg is not None
+                and (msg := flatten_str_chain(msg_arg))
             ):
                 placeholder_count = sum(
                     1 + (m["minwidth"] == "*") + (m["precision"] == ".*")
-                    for m in conv_spec_re().finditer(msg_arg.value)
+                    for m in conv_spec_re().finditer(msg)
                 )
                 arg_count = len(node.args) - 1 - (node.func.attr == "log")
 
@@ -412,3 +412,23 @@ def is_add_chain_with_non_str(node: ast.BinOp) -> bool:
             return True
 
     return False
+
+
+def flatten_str_chain(node: ast.AST) -> str | None:
+    parts = []
+
+    def visit(node: ast.AST) -> bool:
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            parts.append(node.value)
+            return True
+        elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
+            return visit(node.left) and visit(node.right)
+        return False
+
+    result = visit(node)
+    if not result:
+        return None
+    if len(parts) == 1:
+        return parts[0]
+    else:
+        return "".join(parts)

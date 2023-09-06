@@ -8,6 +8,7 @@ from textwrap import dedent
 
 import pytest
 
+from flake8_logging import flatten_str_chain
 from flake8_logging import Plugin
 
 
@@ -1335,6 +1336,18 @@ class TestLOG012:
             (2, 13, "LOG012 formatting error: 3 %s placeholders but 1 argument"),
         ]
 
+    def test_module_call_mod_joined_args_1_0(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending " + "%s")
+            """
+        )
+
+        assert results == [
+            (2, 13, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+        ]
+
     def test_module_call_log_mod_args_1_0(self):
         results = run(
             """\
@@ -1409,3 +1422,87 @@ class TestLOG012:
         assert results == [
             (3, 12, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
         ]
+
+    def test_attr_call_mod_joined_args_1_0(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending" + " " + "%s")
+            """
+        )
+
+        assert results == [
+            (3, 12, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+        ]
+
+
+class TestFlattenStrChain:
+    def run(self, source: str) -> str | None:
+        tree = ast.parse(dedent(source))
+        expr = tree.body[0]
+        assert isinstance(expr, ast.Expr)
+        return flatten_str_chain(expr.value)
+
+    def test_single_string(self):
+        result = self.run(
+            """\
+            "Five"
+            """
+        )
+
+        assert result == "Five"
+
+    def test_single_bytes(self):
+        result = self.run(
+            """\
+            b"Five"
+            """
+        )
+
+        assert result is None
+
+    def test_two_added(self):
+        result = self.run(
+            """\
+            "Five" + " "
+            """
+        )
+
+        assert result == "Five "
+
+    def test_two_str_bytes(self):
+        result = self.run(
+            """\
+            "Five" + b" "
+            """
+        )
+
+        assert result is None
+
+    def test_two_bytes_str(self):
+        result = self.run(
+            """\
+            b"Five" + " "
+            """
+        )
+
+        assert result is None
+
+    def test_three(self):
+        result = self.run(
+            """\
+            "Five" + " " + "little"
+            """
+        )
+
+        assert result == "Five little"
+
+    def test_two_plus_implicit(self):
+        result = self.run(
+            """\
+            ("Five" " ") + "little"
+            """
+        )
+
+        assert result == "Five little"
