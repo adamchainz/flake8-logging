@@ -84,24 +84,6 @@ def conv_spec_re() -> re.Pattern[str]:
     )
 
 
-@lru_cache(maxsize=None)
-def named_conv_spec_re() -> re.Pattern[str]:
-    return re.compile(
-        r"""
-            %
-            \(
-                (?P<name>.*?)
-            \)
-            ([-#0 +]+)?  # conversion flags
-            (\d+)?  # minimum field width
-            (\.\d+)?  # precision
-            [hlL]?  # length modifier
-            [acdeEfFgGiorsuxX]  # conversion type
-        """,
-        re.VERBOSE,
-    )
-
-
 LOG001 = "LOG001 use logging.getLogger() to instantiate loggers"
 LOG002 = "LOG002 use __name__ with getLogger()"
 LOG002_names = frozenset(
