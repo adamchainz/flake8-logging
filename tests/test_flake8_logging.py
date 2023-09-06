@@ -1274,7 +1274,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (2, 13, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+            (2, 13, "LOG012 formatting error: 1 % placeholder but 0 arguments"),
         ]
 
     def test_module_call_mod_args_2_0(self):
@@ -1286,7 +1286,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (2, 13, "LOG012 formatting error: 2 %s placeholders but 0 arguments"),
+            (2, 13, "LOG012 formatting error: 2 % placeholders but 0 arguments"),
         ]
 
     def test_module_call_mod_args_0_1(self):
@@ -1309,7 +1309,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (2, 13, "LOG012 formatting error: 2 %s placeholders but 1 argument"),
+            (2, 13, "LOG012 formatting error: 2 % placeholders but 1 argument"),
         ]
 
     def test_module_call_mod_args_2_1_precision(self):
@@ -1321,7 +1321,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (2, 13, "LOG012 formatting error: 2 %s placeholders but 1 argument"),
+            (2, 13, "LOG012 formatting error: 2 % placeholders but 1 argument"),
         ]
 
     def test_module_call_mod_args_3_1_minwidth_precision(self):
@@ -1333,7 +1333,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (2, 13, "LOG012 formatting error: 3 %s placeholders but 1 argument"),
+            (2, 13, "LOG012 formatting error: 3 % placeholders but 1 argument"),
         ]
 
     def test_module_call_mod_joined_args_1_0(self):
@@ -1345,7 +1345,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (2, 13, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+            (2, 13, "LOG012 formatting error: 1 % placeholder but 0 arguments"),
         ]
 
     def test_module_call_log_mod_args_1_0(self):
@@ -1357,7 +1357,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (2, 26, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+            (2, 26, "LOG012 formatting error: 1 % placeholder but 0 arguments"),
         ]
 
     def test_module_call_mod_kwarg(self):
@@ -1420,7 +1420,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (3, 12, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+            (3, 12, "LOG012 formatting error: 1 % placeholder but 0 arguments"),
         ]
 
     def test_attr_call_mod_joined_args_1_0(self):
@@ -1433,7 +1433,7 @@ class TestLOG012:
         )
 
         assert results == [
-            (3, 12, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+            (3, 12, "LOG012 formatting error: 1 % placeholder but 0 arguments"),
         ]
 
 

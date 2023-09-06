@@ -365,7 +365,7 @@ class Visitor(ast.NodeVisitor):
                             LOG012.format(
                                 n=placeholder_count,
                                 ns="s" if placeholder_count != 1 else "",
-                                type="%s",
+                                type="%",
                                 m=arg_count,
                                 ms="s" if arg_count != 1 else "",
                             ),
