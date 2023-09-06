@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Add rule LOG012 that detects mismatches between ``%``-style formatting placeholders and arguments.
+
 1.2.0 (2023-09-04)
 ------------------
 

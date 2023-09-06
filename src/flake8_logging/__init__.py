@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import ast
+import re
 import sys
+from functools import lru_cache
 from importlib.metadata import version
 from typing import Any
 from typing import Generator
@@ -63,6 +65,25 @@ logrecord_attributes = frozenset(
     )
 )
 
+# Source:
+# https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
+
+
+@lru_cache(maxsize=None)
+def conv_spec_re() -> re.Pattern[str]:
+    return re.compile(
+        r"""
+            %
+            ([-#0 +]+)?  # conversion flags
+            (?P<minwidth>\d+|\*)?  # minimum field width
+            (?P<precision>\.\d+|\.\*)?  # precision
+            [hlL]?  # length modifier
+            [acdeEfFgGiorsuxX]  # conversion type
+        """,
+        re.VERBOSE,
+    )
+
+
 LOG001 = "LOG001 use logging.getLogger() to instantiate loggers"
 LOG002 = "LOG002 use __name__ with getLogger()"
 LOG002_names = frozenset(
@@ -80,6 +101,7 @@ LOG008 = "LOG008 warn() is deprecated, use warning() instead"
 LOG009 = "LOG009 WARN is undocumented, use WARNING instead"
 LOG010 = "LOG010 exception() does not take an exception"
 LOG011 = "LOG011 avoid pre-formatting log messages"
+LOG012 = "LOG012 formatting error: {n} {type} placeholder{ns} but {m} argument{ms}"
 
 
 class Visitor(ast.NodeVisitor):
@@ -288,20 +310,20 @@ class Visitor(ast.NodeVisitor):
                     (node.args[0].lineno, node.args[0].col_offset, LOG010)
                 )
 
+            msg_arg_kwarg = False
+            if node.func.attr == "log" and len(node.args) >= 2:
+                msg_arg = node.args[1]
+            elif node.func.attr != "log" and len(node.args) >= 1:
+                msg_arg = node.args[0]
+            else:
+                try:
+                    msg_arg = [k for k in node.keywords if k.arg == "msg"][0].value
+                    msg_arg_kwarg = True
+                except IndexError:
+                    msg_arg = None
+
             # LOG011
             if (
-                (
-                    node.func.attr == "log"
-                    and len(node.args) >= 2
-                    and (msg_arg := node.args[1])
-                )
-                or (
-                    node.func.attr != "log"
-                    and len(node.args) >= 1
-                    and (msg_arg := node.args[0])
-                )
-                or any((msg_arg := k.value) for k in node.keywords if k.arg == "msg")
-            ) and (
                 isinstance(msg_arg, ast.JoinedStr)
                 or (
                     isinstance(msg_arg, ast.Call)
@@ -322,6 +344,33 @@ class Visitor(ast.NodeVisitor):
                 )
             ):
                 self.errors.append((msg_arg.lineno, msg_arg.col_offset, LOG011))
+
+            # LOG012
+            if (
+                not msg_arg_kwarg
+                and isinstance(msg_arg, ast.Constant)
+                and isinstance(msg_arg.value, str)
+            ):
+                placeholder_count = sum(
+                    1 + (m["minwidth"] == "*") + (m["precision"] == ".*")
+                    for m in conv_spec_re().finditer(msg_arg.value)
+                )
+                arg_count = len(node.args) - 1 - (node.func.attr == "log")
+
+                if placeholder_count > 0 and placeholder_count != arg_count:
+                    self.errors.append(
+                        (
+                            msg_arg.lineno,
+                            msg_arg.col_offset,
+                            LOG012.format(
+                                n=placeholder_count,
+                                ns="s" if placeholder_count != 1 else "",
+                                type="%s",
+                                m=arg_count,
+                                ms="s" if arg_count != 1 else "",
+                            ),
+                        )
+                    )
 
         self.generic_visit(node)
 

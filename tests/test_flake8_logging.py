@@ -1261,3 +1261,151 @@ class TestLOG011:
         assert results == [
             (4, 16, "LOG011 avoid pre-formatting log messages"),
         ]
+
+
+class TestLOG012:
+    def test_module_call_mod_args_1_0(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %s")
+            """
+        )
+
+        assert results == [
+            (2, 13, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+        ]
+
+    def test_module_call_mod_args_2_0(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %s %s")
+            """
+        )
+
+        assert results == [
+            (2, 13, "LOG012 formatting error: 2 %s placeholders but 0 arguments"),
+        ]
+
+    def test_module_call_mod_args_0_1(self):
+        # Presume another style is in use
+        results = run(
+            """\
+            import logging
+            logging.info("Blending", fruit)
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_mod_args_2_1_minwidth(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %*d", fruit)
+            """
+        )
+
+        assert results == [
+            (2, 13, "LOG012 formatting error: 2 %s placeholders but 1 argument"),
+        ]
+
+    def test_module_call_mod_args_2_1_precision(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %.*d", fruit)
+            """
+        )
+
+        assert results == [
+            (2, 13, "LOG012 formatting error: 2 %s placeholders but 1 argument"),
+        ]
+
+    def test_module_call_mod_args_3_1_minwidth_precision(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %*.*f", fruit)
+            """
+        )
+
+        assert results == [
+            (2, 13, "LOG012 formatting error: 3 %s placeholders but 1 argument"),
+        ]
+
+    def test_module_call_log_mod_args_1_0(self):
+        results = run(
+            """\
+            import logging
+            logging.log(logging.INFO, "Blending %s")
+            """
+        )
+
+        assert results == [
+            (2, 26, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+        ]
+
+    def test_module_call_mod_kwarg(self):
+        results = run(
+            """\
+            import logging
+            logging.info(msg="Blending %s")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_log_mod_kwarg(self):
+        results = run(
+            """\
+            import logging
+            logging.log(logging.INFO, msg="Blending %s")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_named(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %(fruit)s")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_strformat(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending {}")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_template(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending $fruit")
+            """
+        )
+
+        assert results == []
+
+    def test_attr_call_mod_args_1_0(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %s")
+            """
+        )
+
+        assert results == [
+            (3, 12, "LOG012 formatting error: 1 %s placeholder but 0 arguments"),
+        ]
