@@ -54,8 +54,9 @@ The `Logger Objects documentation section <https://docs.python.org/3/library/log
 
   Note that Loggers should NEVER be instantiated directly, but always through the module-level function ``logging.getLogger(name)``.
 
-Directly instantiated loggers are not added into the logger tree, so their messages are discarded.
-This means you’ll never see any messages on such loggers.
+hDirectly instantiated loggers are not added into the logger tree.
+This means that they bypass all configuration and their messages are only sent to the `last resort handler <https://docs.python.org/3/library/logging.html#logging.lastResort>`__.
+This can mean their messages are incorrectly filtered, formatted, and sent only to ``stderr``.
 Use |getLogger()|__ to correctly instantiate loggers.
 
 .. |getLogger()| replace:: ``getLogger()``
