@@ -57,6 +57,8 @@ The `Logger Objects documentation section <https://docs.python.org/3/library/log
 Directly instantiated loggers are not added into the logger tree.
 This means that they bypass all configuration and their messages are only sent to the `last resort handler <https://docs.python.org/3/library/logging.html#logging.lastResort>`__.
 This can mean their messages are incorrectly filtered, formatted, and sent only to ``stderr``.
+Potentially, such messages will not be visible in your logging tooling and you won’t be alerted to issues.
+
 Use |getLogger()|__ to correctly instantiate loggers.
 
 .. |getLogger()| replace:: ``getLogger()``
