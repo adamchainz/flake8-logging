@@ -1300,6 +1300,16 @@ class TestLOG012:
 
         assert results == []
 
+    def test_module_call_mod_args_0_percent(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending 100%%")
+            """
+        )
+
+        assert results == []
+
     def test_module_call_mod_args_2_1_minwidth(self):
         results = run(
             """\
