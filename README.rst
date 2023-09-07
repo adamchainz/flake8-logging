@@ -20,6 +20,8 @@ flake8-logging
 
 A `Flake8 <https://flake8.readthedocs.io/en/latest/>`_ plugin that checks for issues using the standard library logging module.
 
+For a brief overview and background, see `the introductory blog post <https://adamj.eu/tech/2023/09/07/introducing-flake8-logging/>`__.
+
 Requirements
 ============
 
