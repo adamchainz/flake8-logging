@@ -4,6 +4,8 @@ Changelog
 
 * Fix LOG012 false positive with unpacked arguments like ``*args``.
 
+* Fix LOG012 false positive with ``%%`` in formatting strings.
+
 1.3.0 (2023-09-17)
 ------------------
 
