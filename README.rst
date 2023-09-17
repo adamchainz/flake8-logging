@@ -471,7 +471,7 @@ Additionally, if no arguments are provided, parametrized messages are silently u
     INFO:root:Sent %s to %s
 
 This rule detects mismatches between the number of message parameters and those provided.
-It only supports ``%``-style formatting at the moment.
+At the moment, it only supports ``%``-style formatting with at least one parameter.
 
 Failing examples:
 
