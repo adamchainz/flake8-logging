@@ -1390,6 +1390,16 @@ class TestLOG012:
 
         assert results == []
 
+    def test_module_call_modpos_star_args(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %s %s", *args)
+            """
+        )
+
+        assert results == []
+
     def test_module_call_named(self):
         results = run(
             """\

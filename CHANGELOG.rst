@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Fix LOG012 false positive with unpacked arguments like ``*args``.
+
 1.3.0 (2023-09-17)
 ------------------
 

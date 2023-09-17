@@ -348,6 +348,7 @@ class Visitor(ast.NodeVisitor):
                 msg_arg is not None
                 and not msg_arg_kwarg
                 and (msg := flatten_str_chain(msg_arg))
+                and not any(isinstance(arg, ast.Starred) for arg in node.args)
             ):
                 modpos_count = sum(
                     1 + (m["minwidth"] == "*") + (m["precision"] == ".*")
