@@ -65,12 +65,10 @@ logrecord_attributes = frozenset(
     )
 )
 
-# Source:
-# https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
-
 
 @lru_cache(maxsize=None)
-def conv_spec_re() -> re.Pattern[str]:
+def modpos_placeholder_re() -> re.Pattern[str]:
+    # https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
     return re.compile(
         r"""
             %
@@ -347,24 +345,24 @@ class Visitor(ast.NodeVisitor):
 
             # LOG012
             if (
-                not msg_arg_kwarg
-                and msg_arg is not None
+                msg_arg is not None
+                and not msg_arg_kwarg
                 and (msg := flatten_str_chain(msg_arg))
             ):
-                placeholder_count = sum(
+                modpos_count = sum(
                     1 + (m["minwidth"] == "*") + (m["precision"] == ".*")
-                    for m in conv_spec_re().finditer(msg)
+                    for m in modpos_placeholder_re().finditer(msg)
                 )
                 arg_count = len(node.args) - 1 - (node.func.attr == "log")
 
-                if placeholder_count > 0 and placeholder_count != arg_count:
+                if modpos_count > 0 and modpos_count != arg_count:
                     self.errors.append(
                         (
                             msg_arg.lineno,
                             msg_arg.col_offset,
                             LOG012.format(
-                                n=placeholder_count,
-                                ns="s" if placeholder_count != 1 else "",
+                                n=modpos_count,
+                                ns="s" if modpos_count != 1 else "",
                                 style="%",
                                 m=arg_count,
                                 ms="s" if arg_count != 1 else "",
