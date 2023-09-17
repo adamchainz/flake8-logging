@@ -2,6 +2,9 @@
 Changelog
 =========
 
+1.3.1 (2023-09-17)
+------------------
+
 * Fix LOG012 false positive with unpacked arguments like ``*args``.
 
 * Fix LOG012 false positive with ``%%`` in formatting strings.
