@@ -396,13 +396,13 @@ Logger methods support string formatting for `logging variable data <https://doc
 
     logger.info("Couldn’t chop %s", vegetable)
 
-Formatting is skipped if the message isn’t logged due to its level being lower than the configured one.
+Log-aggregating tools, such as `Sentry <https://sentry.io/>`__ can group messages based on their unformatted message templates.
+Using a pre-formatted message, such as from an f-string, prevents this from happening.
+Tools have to rely on imperfect heuristics, which can lead to duplicate groups.
 
+Additionally, the logging framework skips formatting messages that won’t be logged.
 Using a pre-formatted string, such as from an f-string, has no such optimization.
-Time is always spent on formatting even when the message won’t be logged.
-
-Additionally, error-collecting tools can group messages based on their unformatted messages.
-With pre-formatted messages, grouping can only be done with heuristics, which may be inaccurate.
+This overhead can add up when you have a high volume of logs that are normally skipped.
 
 This rule detects logger method calls with a ``msg`` argument that is one of:
 
