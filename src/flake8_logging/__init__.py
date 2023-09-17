@@ -72,11 +72,16 @@ def modpos_placeholder_re() -> re.Pattern[str]:
     return re.compile(
         r"""
             %
-            ([-#0 +]+)?  # conversion flags
-            (?P<minwidth>\d+|\*)?  # minimum field width
-            (?P<precision>\.\d+|\.\*)?  # precision
-            [hlL]?  # length modifier
-            [acdeEfFgGiorsuxX]  # conversion type
+            (?P<spec>
+                % |  # raw % character
+                (?:
+                    ([-#0 +]+)?  # conversion flags
+                    (?P<minwidth>\d+|\*)?  # minimum field width
+                    (?P<precision>\.\d+|\.\*)?  # precision
+                    [hlL]?  # length modifier
+                    [acdeEfFgGiorsuxX]  # conversion type
+                )
+            )
         """,
         re.VERBOSE,
     )
@@ -353,6 +358,7 @@ class Visitor(ast.NodeVisitor):
                 modpos_count = sum(
                     1 + (m["minwidth"] == "*") + (m["precision"] == ".*")
                     for m in modpos_placeholder_re().finditer(msg)
+                    if m["spec"] != "%"
                 )
                 arg_count = len(node.args) - 1 - (node.func.attr == "log")
 

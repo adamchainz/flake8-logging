@@ -1310,6 +1310,16 @@ class TestLOG012:
 
         assert results == []
 
+    def test_module_call_modpos_args_1_percent(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blended %s%% of %s", percent, fruit)
+            """
+        )
+
+        assert results == []
+
     def test_module_call_modpos_args_2_1_minwidth(self):
         results = run(
             """\
