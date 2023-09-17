@@ -1132,6 +1132,19 @@ class TestLOG011:
             (3, 13, "LOG011 avoid pre-formatting log messages"),
         ]
 
+    def test_module_call_concatenation_f_string(self):
+        results = run(
+            """\
+            import logging
+
+            logging.info(f"Hi" "a")
+            """
+        )
+
+        assert results == [
+            (3, 13, "LOG011 avoid pre-formatting log messages"),
+        ]
+
     def test_module_call_concatenation_all_strings(self):
         results = run(
             """\
