@@ -1480,6 +1480,146 @@ class TestLOG012:
         ]
 
 
+class TestLOG013:
+    def test_module_call_missing(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %(fruit)s", {})
+            """
+        )
+
+        assert results == [
+            (2, 13, "LOG013 formatting error: missing key: 'fruit'"),
+        ]
+
+    def test_module_call_unreferenced(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %(fruit)s", {"fruit": fruit, "colour": "yellow"})
+            """
+        )
+
+        assert results == [
+            (2, 35, "LOG013 formatting error: unreferenced key: 'colour'"),
+        ]
+
+    def test_module_call_log_missing(self):
+        results = run(
+            """\
+            import logging
+            logging.log(logging.INFO, "Blending %(fruit)s", {})
+            """
+        )
+
+        assert results == [
+            (2, 26, "LOG013 formatting error: missing key: 'fruit'"),
+        ]
+
+    def test_module_call_log_unreferenced(self):
+        results = run(
+            """\
+            import logging
+            logging.log(
+                logging.INFO,
+                "Blending %(fruit)s",
+                {"fruit": fruit, "colour": "yellow"},
+            )
+            """
+        )
+
+        assert results == [
+            (5, 4, "LOG013 formatting error: unreferenced key: 'colour'"),
+        ]
+
+    def test_module_call_all_args(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Blending %(fruit)s", {"fruit": fruit})
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_kwarg_all_args(self):
+        results = run(
+            """\
+            import logging
+            logging.info({"fruit": fruit}, msg="Blending %(fruit)s")
+            """
+        )
+
+        assert results == []
+
+    def test_module_call_log_kwarg(self):
+        results = run(
+            """\
+            import logging
+            logging.log(logging.INFO, {"fruit": fruit}, msg="Blending %(fruit)s")
+            """
+        )
+
+        assert results == []
+
+    def test_attr_call_missing(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s", {})
+            """
+        )
+
+        assert results == [
+            (3, 12, "LOG013 formatting error: missing key: 'fruit'"),
+        ]
+
+    def test_attr_call_unreferenced(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s", {"fruit": fruit, "colour": "yellow"})
+            """
+        )
+
+        assert results == [
+            (3, 34, "LOG013 formatting error: unreferenced key: 'colour'"),
+        ]
+
+    def test_attr_call_log_missing(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.log(logging.INFO, "Blending %(fruit)s", {})
+            """
+        )
+
+        assert results == [
+            (3, 25, "LOG013 formatting error: missing key: 'fruit'"),
+        ]
+
+    def test_attr_call_log_unreferenced(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.log(
+                logging.INFO,
+                "Blending %(fruit)s",
+                {"fruit": fruit, "colour": "yellow"},
+            )
+            """
+        )
+
+        assert results == [
+            (6, 4, "LOG013 formatting error: unreferenced key: 'colour'"),
+        ]
+
+
 class TestFlattenStrChain:
     def run(self, source: str) -> str | None:
         tree = ast.parse(dedent(source))

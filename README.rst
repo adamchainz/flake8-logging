@@ -488,3 +488,49 @@ Corrected:
 .. code-block:: python
 
     logging.info("Blending %s of size %r", fruit.name, fruit.size)
+
+LOG013 formatting error: ``<missing/unreferenced>`` keys: ``<keys>``
+--------------------------------------------------------------------
+
+When using named ``%``-style formatting, if the message references a missing key, the call will error:
+
+.. code-block:: pycon
+
+    >>> logging.error("Hi %(name)s", {"nam": "hacker"})
+    --- Logging error ---
+    Traceback (most recent call last):
+      File "/.../logging/__init__.py", line 1160, in emit
+        msg = self.format(record)
+              ^^^^^^^^^^^^^^^^^^^
+    ...
+
+      File "/.../logging/__init__.py", line 392, in getMessage
+        msg = msg % self.args
+              ~~~~^~~~~~~~~~~
+    KeyError: 'name'
+    Call stack:
+      File "<stdin>", line 1, in <module>
+    Message: 'Hi %(name)s'
+    Arguments: {'nam': 'hacker'}
+
+This will only happen when the logger is enabled since loggers don’t perform string formatting when disabled.
+Thus a configuration change can reveal such errors.
+
+This rule detects mismatches between the message parameter names and those provided.
+It only works if there’s a dict literal argument for the parameters.
+
+Failing example:
+
+.. code-block:: python
+
+    logging.info("Blending %(fruit)s", {"froot": froot})
+
+.. code-block:: python
+
+    logging.info("Blending %(fruit)s", {"fruit": fruit, "colour": "yellow"})
+
+Corrected:
+
+.. code-block:: python
+
+    logging.info("Blending %(fruit)s", {"fruit": fruit})
