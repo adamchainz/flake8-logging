@@ -6,6 +6,7 @@ import sys
 from functools import lru_cache
 from importlib.metadata import version
 from typing import Any
+from typing import cast
 from typing import Generator
 from typing import Sequence
 
@@ -87,6 +88,25 @@ def modpos_placeholder_re() -> re.Pattern[str]:
     )
 
 
+@lru_cache(maxsize=None)
+def modnamed_placeholder_re() -> re.Pattern[str]:
+    # https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
+    return re.compile(
+        r"""
+            %
+            \(
+                (?P<name>.*?)
+            \)
+            ([-#0 +]+)?  # conversion flags
+            (\d+)?  # minimum field width
+            (\.\d+)?  # precision
+            [hlL]?  # length modifier
+            [acdeEfFgGiorsuxX]  # conversion type
+        """,
+        re.VERBOSE,
+    )
+
+
 LOG001 = "LOG001 use logging.getLogger() to instantiate loggers"
 LOG002 = "LOG002 use __name__ with getLogger()"
 LOG002_names = frozenset(
@@ -105,6 +125,7 @@ LOG009 = "LOG009 WARN is undocumented, use WARNING instead"
 LOG010 = "LOG010 exception() does not take an exception"
 LOG011 = "LOG011 avoid pre-formatting log messages"
 LOG012 = "LOG012 formatting error: {n} {style} placeholder{ns} but {m} argument{ms}"
+LOG013 = "LOG013 formatting error: {mistake} key{ns}: {keys}"
 
 
 class Visitor(ast.NodeVisitor):
@@ -355,27 +376,7 @@ class Visitor(ast.NodeVisitor):
                 and (msg := flatten_str_chain(msg_arg))
                 and not any(isinstance(arg, ast.Starred) for arg in node.args)
             ):
-                modpos_count = sum(
-                    1 + (m["minwidth"] == "*") + (m["precision"] == ".*")
-                    for m in modpos_placeholder_re().finditer(msg)
-                    if m["spec"] != "%"
-                )
-                arg_count = len(node.args) - 1 - (node.func.attr == "log")
-
-                if modpos_count > 0 and modpos_count != arg_count:
-                    self.errors.append(
-                        (
-                            msg_arg.lineno,
-                            msg_arg.col_offset,
-                            LOG012.format(
-                                n=modpos_count,
-                                ns="s" if modpos_count != 1 else "",
-                                style="%",
-                                m=arg_count,
-                                ms="s" if arg_count != 1 else "",
-                            ),
-                        )
-                    )
+                self._check_msg_and_args(node, msg_arg, msg)
 
         self.generic_visit(node)
 
@@ -392,6 +393,77 @@ class Visitor(ast.NodeVisitor):
             elif isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
                 break
         return None
+
+    def _check_msg_and_args(self, node: ast.Call, msg_arg: ast.AST, msg: str) -> None:
+        assert isinstance(node.func, ast.Attribute)
+        if (
+            (
+                (node.func.attr != "log" and (dict_idx := 1))
+                or (node.func.attr == "log" and (dict_idx := 2))
+            )
+            and len(node.args) == dict_idx + 1
+            and (dict_node := node.args[dict_idx])
+            and isinstance(dict_node, ast.Dict)
+            and all(
+                isinstance(k, ast.Constant) and isinstance(k.value, str)
+                for k in dict_node.keys
+            )
+            and (
+                modnames := {m["name"] for m in modnamed_placeholder_re().finditer(msg)}
+            )
+        ):
+            # LOG013
+            given = {cast(ast.Constant, k).value for k in dict_node.keys}
+            if missing := modnames - given:
+                self.errors.append(
+                    (
+                        msg_arg.lineno,
+                        msg_arg.col_offset,
+                        LOG013.format(
+                            mistake="missing",
+                            ns="s" if len(missing) != 1 else "",
+                            keys=", ".join([repr(k) for k in missing]),
+                        ),
+                    )
+                )
+
+            if missing := given - modnames:
+                self.errors.append(
+                    (
+                        dict_node.lineno,
+                        dict_node.col_offset,
+                        LOG013.format(
+                            mistake="unreferenced",
+                            ns="s" if len(missing) != 1 else "",
+                            keys=", ".join([repr(k) for k in missing]),
+                        ),
+                    )
+                )
+
+            return
+
+        modpos_count = sum(
+            1 + (m["minwidth"] == "*") + (m["precision"] == ".*")
+            for m in modpos_placeholder_re().finditer(msg)
+            if m["spec"] != "%"
+        )
+        arg_count = len(node.args) - 1 - (node.func.attr == "log")
+
+        if modpos_count > 0 and modpos_count != arg_count:
+            self.errors.append(
+                (
+                    msg_arg.lineno,
+                    msg_arg.col_offset,
+                    LOG012.format(
+                        n=modpos_count,
+                        ns="s" if modpos_count != 1 else "",
+                        style="%",
+                        m=arg_count,
+                        ms="s" if arg_count != 1 else "",
+                    ),
+                )
+            )
+            return
 
 
 def keyword_pos(node: ast.keyword) -> tuple[int, int]:

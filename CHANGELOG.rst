@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Add rule LOG013 that detects mismatches between named ``%``-style formatting placeholders and keys in dict argument.
+
 1.3.1 (2023-09-17)
 ------------------
 
