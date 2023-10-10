@@ -126,6 +126,7 @@ LOG010 = "LOG010 exception() does not take an exception"
 LOG011 = "LOG011 avoid pre-formatting log messages"
 LOG012 = "LOG012 formatting error: {n} {style} placeholder{ns} but {m} argument{ms}"
 LOG013 = "LOG013 formatting error: {mistake} key{ns}: {keys}"
+LOG014 = "LOG014 avoid exc_info=True outside of exception handlers"
 
 
 class Visitor(ast.NodeVisitor):
@@ -226,6 +227,8 @@ class Visitor(ast.NodeVisitor):
             (self._logging_name and node.func.value.id == self._logging_name)
             or (self._logger_name and node.func.value.id == self._logger_name)
         ):
+            exc_handler = self._current_except_handler()
+
             # LOG008
             if node.func.attr == "warn":
                 self.errors.append((node.lineno, node.col_offset, LOG008))
@@ -267,10 +270,8 @@ class Visitor(ast.NodeVisitor):
                     )
 
             if node.func.attr == "exception":
-                handler = self._current_except_handler()
-
                 # LOG004
-                if not handler:
+                if not exc_handler:
                     self.errors.append(
                         (node.lineno, node.col_offset, LOG004),
                     )
@@ -281,9 +282,9 @@ class Visitor(ast.NodeVisitor):
                         isinstance(exc_info.value, ast.Constant)
                         and exc_info.value.value
                     ) or (
-                        handler
+                        exc_handler
                         and isinstance(exc_info.value, ast.Name)
-                        and exc_info.value.id == handler.name
+                        and exc_info.value.id == exc_handler.name
                     ):
                         self.errors.append(
                             (*keyword_pos(exc_info), LOG006),
@@ -299,9 +300,7 @@ class Visitor(ast.NodeVisitor):
                         )
 
             # LOG005
-            elif node.func.attr == "error" and (
-                handler := self._current_except_handler()
-            ):
+            elif node.func.attr == "error" and exc_handler is not None:
                 rewritable = False
                 if any((exc_info := kw).arg == "exc_info" for kw in node.keywords):
                     if (
@@ -311,7 +310,7 @@ class Visitor(ast.NodeVisitor):
                         rewritable = True
                     elif (
                         isinstance(exc_info.value, ast.Name)
-                        and exc_info.value.id == handler.name
+                        and exc_info.value.id == exc_handler.name
                     ):
                         rewritable = True
                 else:
@@ -322,12 +321,22 @@ class Visitor(ast.NodeVisitor):
                         (node.lineno, node.col_offset, LOG005),
                     )
 
+            elif (
+                exc_handler is None
+                and any((exc_info := kw).arg == "exc_info" for kw in node.keywords)
+                and isinstance(exc_info.value, ast.Constant)
+                and exc_info.value.value
+            ):
+                self.errors.append(
+                    (exc_info.lineno, exc_info.col_offset, LOG014),
+                )
+
             # LOG010
             if (
                 node.func.attr == "exception"
                 and len(node.args) >= 1
                 and isinstance(node.args[0], ast.Name)
-                and (exc_handler := self._current_except_handler()) is not None
+                and exc_handler is not None
                 and node.args[0].id == exc_handler.name
             ):
                 self.errors.append(

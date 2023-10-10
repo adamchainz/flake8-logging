@@ -1620,6 +1620,55 @@ class TestLOG013:
         ]
 
 
+class TestLOG014:
+    def test_module_call(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Uh oh", exc_info=True)
+            """
+        )
+
+        assert results == [
+            (2, 22, "LOG014 avoid exc_info=True outside of exception handlers"),
+        ]
+
+    def test_module_call_truthy(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Uh oh", exc_info=1)
+            """
+        )
+
+        assert results == [
+            (2, 22, "LOG014 avoid exc_info=True outside of exception handlers"),
+        ]
+
+    def test_module_call_name(self):
+        results = run(
+            """\
+            import logging
+            logging.info("Uh oh", exc_info=maybe)
+            """
+        )
+
+        assert results == []
+
+    def test_attr_call(self):
+        results = run(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Uh oh", exc_info=True)
+            """
+        )
+
+        assert results == [
+            (3, 21, "LOG014 avoid exc_info=True outside of exception handlers"),
+        ]
+
+
 class TestFlattenStrChain:
     def run(self, source: str) -> str | None:
         tree = ast.parse(dedent(source))

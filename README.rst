@@ -534,3 +534,32 @@ Corrected:
 .. code-block:: python
 
     logging.info("Blending %(fruit)s", {"fruit": fruit})
+
+LOG014 avoid ``exc_info=True`` outside of exception handlers
+------------------------------------------------------------
+
+Using ``exc_info=True`` outside of an exception handler attaches ``None`` as the exception information, leading to confusing messages:
+
+.. code-block:: pycon
+
+    >>> logging.warning("Uh oh", exc_info=True)
+    WARNING:root:Uh oh
+    NoneType: None
+
+This rule detects logging calls with ``exc_info=True`` outside of exception handlers.
+
+Failing example:
+
+.. code-block:: python
+
+    import logging
+
+    logging.warning("Uh oh", exc_info=True)
+
+Corrected:
+
+.. code-block:: python
+
+    import logging
+
+    logging.warning("Uh oh")
