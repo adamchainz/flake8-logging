@@ -328,7 +328,7 @@ class Visitor(ast.NodeVisitor):
                 and exc_info.value.value
             ):
                 self.errors.append(
-                    (exc_info.lineno, exc_info.col_offset, LOG014),
+                    (*keyword_pos(exc_info), LOG014),
                 )
 
             # LOG010
