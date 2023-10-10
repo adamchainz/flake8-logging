@@ -2,6 +2,9 @@
 Changelog
 =========
 
+1.4.0 (2023-10-10)
+------------------
+
 * Add rule LOG013 that detects mismatches between named ``%``-style formatting placeholders and keys in dict argument.
 
 * Add rule LOG014 that detects ``exc_info=True`` outside of exception handlers.
