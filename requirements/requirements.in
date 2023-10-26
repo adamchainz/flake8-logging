@@ -1,4 +1,4 @@
-coverage
+coverage[toml]
 flake8
 pytest
 pytest-flake8-path
