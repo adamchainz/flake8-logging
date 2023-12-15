@@ -244,7 +244,6 @@ class TestLOG002:
 
 
 class TestLOG003:
-
     def test_module_call(self):
         results = run(
             """\
