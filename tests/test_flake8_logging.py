@@ -5,6 +5,7 @@ import re
 import sys
 from importlib.metadata import version
 from textwrap import dedent
+import logging
 
 import pytest
 
@@ -243,6 +244,7 @@ class TestLOG002:
 
 
 class TestLOG003:
+
     def test_module_call(self):
         results = run(
             """\
@@ -253,6 +255,32 @@ class TestLOG003:
 
         assert results == [
             (2, 26, "LOG003 extra key 'msg' clashes with LogRecord attribute")
+        ]
+
+    @pytest.mark.parametrize("key", logging.makeLogRecord({}).__dict__.keys())
+    def test_module_call_logrecord_keys(self, key):
+        results = run(
+            f"""\
+            import logging
+            logging.info("Hi", extra={{"{key}": "Ho"}})
+            """
+        )
+
+        assert results == [
+            (2, 26, f"LOG003 extra key '{key}' clashes with LogRecord attribute")
+        ]
+
+    @pytest.mark.parametrize("key", ["asctime", "message"])
+    def test_module_call_formatter_keys(self, key):
+        results = run(
+            f"""\
+            import logging
+            logging.info("Hi", extra={{"{key}": "Ho"}})
+            """
+        )
+
+        assert results == [
+            (2, 26, f"LOG003 extra key '{key}' clashes with LogRecord attribute")
         ]
 
     def test_module_call_debug(self):
@@ -420,6 +448,8 @@ class TestLOG003:
         assert results == [
             (3, 29, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
+
+
 
 
 class TestLOG004:
