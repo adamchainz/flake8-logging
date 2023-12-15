@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import ast
+import logging
 import re
 import sys
 from importlib.metadata import version
 from textwrap import dedent
-import logging
 
 import pytest
 
