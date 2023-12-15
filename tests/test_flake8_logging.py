@@ -450,8 +450,6 @@ class TestLOG003:
         ]
 
 
-
-
 class TestLOG004:
     def test_module_call(self):
         results = run(
