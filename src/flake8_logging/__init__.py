@@ -51,6 +51,7 @@ logrecord_attributes = frozenset(
         "levelname",
         "levelno",
         "lineno",
+        "message",
         "module",
         "msecs",
         "msg",

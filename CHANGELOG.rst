@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* Extend LOG003 disallowed ``extra`` keys to include ``message``.
+
+  Thanks to Bartek Ogryczak in `PR #77 <https://github.com/adamchainz/flake8-logging/pull/77>`__.
+
 1.4.0 (2023-10-10)
 ------------------
 
