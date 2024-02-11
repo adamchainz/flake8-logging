@@ -6,9 +6,9 @@ import sys
 from functools import lru_cache
 from importlib.metadata import version
 from typing import Any
-from typing import cast
 from typing import Generator
 from typing import Sequence
+from typing import cast
 
 
 class Plugin:
