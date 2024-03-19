@@ -52,12 +52,16 @@ class TestIntegration:
 
 def run(source: str, ignore: tuple[str, ...] = tuple()) -> list[tuple[int, int, str]]:
     tree = ast.parse(dedent(source))
-    return [(line, col, msg) for (line, col, msg, type_) in Plugin(tree).run() if msg[:6] not in ignore]
+    return [
+        (line, col, msg)
+        for (line, col, msg, type_) in Plugin(tree).run()
+        if msg[:6] not in ignore
+    ]
 
 
 class Ignore015:
     def run(self, source: str) -> list[tuple[int, int, str]]:
-        return run(source, ignore=('LOG015',))
+        return run(source, ignore=("LOG015",))
 
 
 class TestLOG001:
@@ -376,8 +380,7 @@ class TestLOG003(Ignore015):
             """
         )
 
-        assert results == [
-        ]
+        assert results == []
 
     def test_module_call_in_function_def(self):
         results = self.run(
@@ -1700,6 +1703,8 @@ class TestLOG014(Ignore015):
         assert results == [
             (3, 21, "LOG014 avoid exc_info=True outside of exception handlers"),
         ]
+
+
 class TestLOG015:
     def test_root_call(self):
         results = run(
@@ -1711,6 +1716,7 @@ class TestLOG015:
         assert results == [
             (2, 0, "LOG015 avoid logging calls on root logger"),
         ]
+
     def test_root_call_alias(self):
         results = run(
             """\

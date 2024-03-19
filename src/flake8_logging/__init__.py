@@ -197,7 +197,9 @@ class Visitor(ast.NodeVisitor):
             isinstance(node.func, ast.Attribute)
             and node.func.attr in logger_methods
             and isinstance(node.func.value, ast.Name)
-            and self._logging_name and node.func.value.id == self._logging_name):
+            and self._logging_name
+            and node.func.value.id == self._logging_name
+        ):
             self.errors.append((node.lineno, node.col_offset, LOG015))
 
         if (
@@ -396,7 +398,6 @@ class Visitor(ast.NodeVisitor):
                 and not any(isinstance(arg, ast.Starred) for arg in node.args)
             ):
                 self._check_msg_and_args(node, msg_arg, msg)
-
 
         self.generic_visit(node)
 
