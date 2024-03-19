@@ -50,7 +50,7 @@ class TestIntegration:
         ]
 
 
-def run(source: str, ignore: tuple[str, ...] = tuple()) -> list[tuple[int, int, str]]:
+def run(source: str, ignore: tuple[str, ...] = ()) -> list[tuple[int, int, str]]:
     tree = ast.parse(dedent(source))
     return [
         (line, col, msg)
