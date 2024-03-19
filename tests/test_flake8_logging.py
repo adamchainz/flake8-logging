@@ -248,9 +248,9 @@ class TestLOG002:
         assert results == []
 
 
-class TestLOG003:
+class TestLOG003(Ignore015):
     def test_module_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Hi", extra={"msg": "Ho"})
@@ -258,13 +258,12 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 26, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     @pytest.mark.parametrize("key", logging.makeLogRecord({}).__dict__.keys())
     def test_module_call_logrecord_keys(self, key):
-        results = run(
+        results = self.run(
             f"""\
             import logging
             logging.info("Hi", extra={{"{key}": "Ho"}})
@@ -272,13 +271,12 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 26, f"LOG003 extra key '{key}' clashes with LogRecord attribute")
         ]
 
     @pytest.mark.parametrize("key", ["asctime", "message"])
     def test_module_call_formatter_keys(self, key):
-        results = run(
+        results = self.run(
             f"""\
             import logging
             logging.info("Hi", extra={{"{key}": "Ho"}})
@@ -286,12 +284,11 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 26, f"LOG003 extra key '{key}' clashes with LogRecord attribute")
         ]
 
     def test_module_call_debug(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.debug("Hi", extra={"msg": "Ho"})
@@ -299,12 +296,11 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 27, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_module_call_args(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Hi", extra={"args": (1,)})
@@ -312,12 +308,11 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 26, "LOG003 extra key 'args' clashes with LogRecord attribute")
         ]
 
     def test_module_call_multiline(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info(
@@ -330,12 +325,11 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
             (5, 8, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_module_call_multiple(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info(
@@ -349,37 +343,32 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
             (5, 8, "LOG003 extra key 'args' clashes with LogRecord attribute"),
             (6, 8, "LOG003 extra key 'msg' clashes with LogRecord attribute"),
         ]
 
     def test_module_call_no_clash(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Hi", extra={"response_msg": "Ho"})
             """
         )
 
-        assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
-        ]
+        assert results == []
 
     def test_module_call_no_extra(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Hi")
             """
         )
 
-        assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
-        ]
+        assert results == []
 
     def test_module_call_extra_unsupported_type(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             extra = {"msg": "Ho"}
@@ -388,11 +377,10 @@ class TestLOG003:
         )
 
         assert results == [
-            (3, 0, "LOG015 avoid logging calls on root logger"),
         ]
 
     def test_module_call_in_function_def(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             def thing():
@@ -401,12 +389,11 @@ class TestLOG003:
         )
 
         assert results == [
-            (3, 4, "LOG015 avoid logging calls on root logger"),
             (3, 30, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
     def test_module_call_dict_constructor(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Hi", extra=dict(msg="Ho"))
@@ -414,12 +401,11 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 30, "LOG003 extra key 'msg' clashes with LogRecord attribute"),
         ]
 
     def test_module_call_dict_constructor_unpack(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             more = {"msg": "Ho"}
@@ -427,12 +413,10 @@ class TestLOG003:
             """
         )
 
-        assert results == [
-            (3, 0, "LOG015 avoid logging calls on root logger"),
-        ]
+        assert results == []
 
     def test_logger_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -445,7 +429,7 @@ class TestLOG003:
         ]
 
     def test_logger_call_other_name(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             log = logging.getLogger(__name__)
@@ -458,7 +442,7 @@ class TestLOG003:
         ]
 
     def test_logger_call_dict_constructor(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
