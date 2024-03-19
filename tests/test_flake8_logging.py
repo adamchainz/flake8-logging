@@ -50,9 +50,14 @@ class TestIntegration:
         ]
 
 
-def run(source: str) -> list[tuple[int, int, str]]:
+def run(source: str, ignore: tuple[str, ...] = tuple()) -> list[tuple[int, int, str]]:
     tree = ast.parse(dedent(source))
-    return [(line, col, msg) for (line, col, msg, type_) in Plugin(tree).run()]
+    return [(line, col, msg) for (line, col, msg, type_) in Plugin(tree).run() if msg[:6] not in ignore]
+
+
+class Ignore015:
+    def run(self, source: str) -> list[tuple[int, int, str]]:
+        return run(source, ignore=('LOG015',))
 
 
 class TestLOG001:
@@ -253,6 +258,7 @@ class TestLOG003:
         )
 
         assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 26, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
@@ -266,6 +272,7 @@ class TestLOG003:
         )
 
         assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 26, f"LOG003 extra key '{key}' clashes with LogRecord attribute")
         ]
 
@@ -279,6 +286,7 @@ class TestLOG003:
         )
 
         assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 26, f"LOG003 extra key '{key}' clashes with LogRecord attribute")
         ]
 
@@ -291,6 +299,7 @@ class TestLOG003:
         )
 
         assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 27, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
@@ -303,6 +312,7 @@ class TestLOG003:
         )
 
         assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
             (2, 26, "LOG003 extra key 'args' clashes with LogRecord attribute")
         ]
 
@@ -320,6 +330,7 @@ class TestLOG003:
         )
 
         assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
             (5, 8, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
@@ -338,6 +349,7 @@ class TestLOG003:
         )
 
         assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
             (5, 8, "LOG003 extra key 'args' clashes with LogRecord attribute"),
             (6, 8, "LOG003 extra key 'msg' clashes with LogRecord attribute"),
         ]
@@ -350,7 +362,9 @@ class TestLOG003:
             """
         )
 
-        assert results == []
+        assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
+        ]
 
     def test_module_call_no_extra(self):
         results = run(
@@ -360,7 +374,9 @@ class TestLOG003:
             """
         )
 
-        assert results == []
+        assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
+        ]
 
     def test_module_call_extra_unsupported_type(self):
         results = run(
@@ -371,7 +387,9 @@ class TestLOG003:
             """
         )
 
-        assert results == []
+        assert results == [
+            (3, 0, "LOG015 avoid logging calls on root logger"),
+        ]
 
     def test_module_call_in_function_def(self):
         results = run(
@@ -383,6 +401,7 @@ class TestLOG003:
         )
 
         assert results == [
+            (3, 4, "LOG015 avoid logging calls on root logger"),
             (3, 30, "LOG003 extra key 'msg' clashes with LogRecord attribute")
         ]
 
@@ -395,7 +414,8 @@ class TestLOG003:
         )
 
         assert results == [
-            (2, 30, "LOG003 extra key 'msg' clashes with LogRecord attribute")
+            (2, 0, "LOG015 avoid logging calls on root logger"),
+            (2, 30, "LOG003 extra key 'msg' clashes with LogRecord attribute"),
         ]
 
     def test_module_call_dict_constructor_unpack(self):
@@ -407,7 +427,9 @@ class TestLOG003:
             """
         )
 
-        assert results == []
+        assert results == [
+            (3, 0, "LOG015 avoid logging calls on root logger"),
+        ]
 
     def test_logger_call(self):
         results = run(
@@ -449,9 +471,9 @@ class TestLOG003:
         ]
 
 
-class TestLOG004:
+class TestLOG004(Ignore015):
     def test_module_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.exception("Hi")
@@ -463,7 +485,7 @@ class TestLOG004:
         ]
 
     def test_module_call_in_function_def(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             def thing():
@@ -477,7 +499,7 @@ class TestLOG004:
 
     def test_module_call_wrapped_in_function_def(self):
         # We can’t guarantee when the function will be called…
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -494,7 +516,7 @@ class TestLOG004:
         ]
 
     def test_module_call_ok(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -507,7 +529,7 @@ class TestLOG004:
         assert results == []
 
     def test_module_call_ok_in_function_def(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             def thing():
@@ -521,7 +543,7 @@ class TestLOG004:
         assert results == []
 
     def test_logger_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -534,7 +556,7 @@ class TestLOG004:
         ]
 
     def test_logger_call_in_function_def(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -548,7 +570,7 @@ class TestLOG004:
         ]
 
     def test_logger_call_ok(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -562,9 +584,9 @@ class TestLOG004:
         assert results == []
 
 
-class TestLOG005:
+class TestLOG005(Ignore015):
     def test_module_call_with_exc_info(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -579,7 +601,7 @@ class TestLOG005:
         ]
 
     def test_module_call_with_exc_info_true(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -594,7 +616,7 @@ class TestLOG005:
         ]
 
     def test_module_call_with_exc_info_1(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -609,7 +631,7 @@ class TestLOG005:
         ]
 
     def test_module_call_with_exc_info_string(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -624,7 +646,7 @@ class TestLOG005:
         ]
 
     def test_module_call_without_exc_info(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -639,7 +661,7 @@ class TestLOG005:
         ]
 
     def test_module_call_with_false_exc_info(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -652,7 +674,7 @@ class TestLOG005:
         assert results == []
 
     def test_module_call_with_alternative_exc_info(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -666,7 +688,7 @@ class TestLOG005:
         assert results == []
 
     def test_logger_call_with_exc_info(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -682,7 +704,7 @@ class TestLOG005:
         ]
 
     def test_logger_call_with_exc_info_true(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -698,9 +720,9 @@ class TestLOG005:
         ]
 
 
-class TestLOG006:
+class TestLOG006(Ignore015):
     def test_module_call_with_true(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -715,7 +737,7 @@ class TestLOG006:
         ]
 
     def test_module_call_with_exc(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -730,7 +752,7 @@ class TestLOG006:
         ]
 
     def test_module_call_with_different_exc(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -744,7 +766,7 @@ class TestLOG006:
         assert results == []
 
     def test_logger_call_with_true(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -760,7 +782,7 @@ class TestLOG006:
         ]
 
     def test_logger_call_with_exc(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -776,9 +798,9 @@ class TestLOG006:
         ]
 
 
-class TestLOG007:
+class TestLOG007(Ignore015):
     def test_module_call_with_false(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -793,7 +815,7 @@ class TestLOG007:
         ]
 
     def test_module_call_with_0(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             try:
@@ -808,7 +830,7 @@ class TestLOG007:
         ]
 
     def test_logger_call_with_false(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -824,9 +846,9 @@ class TestLOG007:
         ]
 
 
-class TestLOG008:
+class TestLOG008(Ignore015):
     def test_module_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.warn("Squawk")
@@ -838,7 +860,7 @@ class TestLOG008:
         ]
 
     def test_logger_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -924,9 +946,9 @@ class TestLOG009:
         ]
 
 
-class TestLOG010:
+class TestLOG010(Ignore015):
     def test_module_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -942,7 +964,7 @@ class TestLOG010:
         ]
 
     def test_module_call_multiline(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -960,7 +982,7 @@ class TestLOG010:
         ]
 
     def test_module_call_no_args(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -974,7 +996,7 @@ class TestLOG010:
         assert results == []
 
     def test_module_call_second_arg(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -988,7 +1010,7 @@ class TestLOG010:
         assert results == []
 
     def test_module_call_not_exc_handler_name(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1003,7 +1025,7 @@ class TestLOG010:
         assert results == []
 
     def test_module_call_in_function_def(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1021,7 +1043,7 @@ class TestLOG010:
         ]
 
     def test_logger_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1038,9 +1060,9 @@ class TestLOG010:
         ]
 
 
-class TestLOG011:
+class TestLOG011(Ignore015):
     def test_module_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1053,7 +1075,7 @@ class TestLOG011:
         ]
 
     def test_module_call_multiline(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1068,7 +1090,7 @@ class TestLOG011:
         ]
 
     def test_module_call_log(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1084,7 +1106,7 @@ class TestLOG011:
         ]
 
     def test_module_call_str_format(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1097,7 +1119,7 @@ class TestLOG011:
         ]
 
     def test_module_call_str_doormat(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1108,7 +1130,7 @@ class TestLOG011:
         assert results == []
 
     def test_module_call_mod_format(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1121,7 +1143,7 @@ class TestLOG011:
         ]
 
     def test_module_call_concatenation(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1134,7 +1156,7 @@ class TestLOG011:
         ]
 
     def test_module_call_concatenation_multiple(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1147,7 +1169,7 @@ class TestLOG011:
         ]
 
     def test_module_call_concatenation_non_string(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1160,7 +1182,7 @@ class TestLOG011:
         ]
 
     def test_module_call_concatenation_f_string(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1173,7 +1195,7 @@ class TestLOG011:
         ]
 
     def test_module_call_concatenation_all_strings(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1184,7 +1206,7 @@ class TestLOG011:
         assert results == []
 
     def test_module_call_non_addition(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1195,7 +1217,7 @@ class TestLOG011:
         assert results == []
 
     def test_module_call_keyword(self):
-        results = run(
+        results = self.run(
             """\
             import logging
 
@@ -1208,7 +1230,7 @@ class TestLOG011:
         ]
 
     def test_logger_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1222,7 +1244,7 @@ class TestLOG011:
         ]
 
     def test_logger_call_str_format(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1236,7 +1258,7 @@ class TestLOG011:
         ]
 
     def test_logger_call_mod_format(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1250,7 +1272,7 @@ class TestLOG011:
         ]
 
     def test_logger_call_concatenation(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1264,7 +1286,7 @@ class TestLOG011:
         ]
 
     def test_logger_call_concatenation_multiple(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1278,7 +1300,7 @@ class TestLOG011:
         ]
 
     def test_logger_call_concatenation_all_strings(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1290,7 +1312,7 @@ class TestLOG011:
         assert results == []
 
     def test_logger_call_keyword(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1304,9 +1326,9 @@ class TestLOG011:
         ]
 
 
-class TestLOG012:
+class TestLOG012(Ignore015):
     def test_module_call_modpos_args_1_0(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %s")
@@ -1318,7 +1340,7 @@ class TestLOG012:
         ]
 
     def test_module_call_modpos_args_2_0(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %s %s")
@@ -1331,7 +1353,7 @@ class TestLOG012:
 
     def test_module_call_modpos_args_0_1(self):
         # Presume another style is in use
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending", fruit)
@@ -1341,7 +1363,7 @@ class TestLOG012:
         assert results == []
 
     def test_module_call_modpos_args_0_percent(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending 100%%")
@@ -1351,7 +1373,7 @@ class TestLOG012:
         assert results == []
 
     def test_module_call_modpos_args_1_percent(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blended %s%% of %s", percent, fruit)
@@ -1361,7 +1383,7 @@ class TestLOG012:
         assert results == []
 
     def test_module_call_modpos_args_2_1_minwidth(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %*d", fruit)
@@ -1373,7 +1395,7 @@ class TestLOG012:
         ]
 
     def test_module_call_modpos_args_2_1_precision(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %.*d", fruit)
@@ -1385,7 +1407,7 @@ class TestLOG012:
         ]
 
     def test_module_call_modpos_args_3_1_minwidth_precision(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %*.*f", fruit)
@@ -1397,7 +1419,7 @@ class TestLOG012:
         ]
 
     def test_module_call_modpos_joined_args_1_0(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending " + "%s")
@@ -1409,7 +1431,7 @@ class TestLOG012:
         ]
 
     def test_module_call_log_modpos_args_1_0(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.log(logging.INFO, "Blending %s")
@@ -1421,7 +1443,7 @@ class TestLOG012:
         ]
 
     def test_module_call_modpos_kwarg(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info(msg="Blending %s")
@@ -1431,7 +1453,7 @@ class TestLOG012:
         assert results == []
 
     def test_module_call_log_modpos_kwarg(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.log(logging.INFO, msg="Blending %s")
@@ -1441,7 +1463,7 @@ class TestLOG012:
         assert results == []
 
     def test_module_call_modpos_star_args(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %s %s", *args)
@@ -1451,7 +1473,7 @@ class TestLOG012:
         assert results == []
 
     def test_module_call_named(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %(fruit)s")
@@ -1461,7 +1483,7 @@ class TestLOG012:
         assert results == []
 
     def test_module_call_strformat(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending {}")
@@ -1471,7 +1493,7 @@ class TestLOG012:
         assert results == []
 
     def test_module_call_template(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending $fruit")
@@ -1481,7 +1503,7 @@ class TestLOG012:
         assert results == []
 
     def test_attr_call_modpos_args_1_0(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1494,7 +1516,7 @@ class TestLOG012:
         ]
 
     def test_attr_call_modpos_joined_args_1_0(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1507,9 +1529,9 @@ class TestLOG012:
         ]
 
 
-class TestLOG013:
+class TestLOG013(Ignore015):
     def test_module_call_missing(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %(fruit)s", {})
@@ -1521,7 +1543,7 @@ class TestLOG013:
         ]
 
     def test_module_call_unreferenced(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %(fruit)s", {"fruit": fruit, "colour": "yellow"})
@@ -1533,7 +1555,7 @@ class TestLOG013:
         ]
 
     def test_module_call_log_missing(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.log(logging.INFO, "Blending %(fruit)s", {})
@@ -1545,7 +1567,7 @@ class TestLOG013:
         ]
 
     def test_module_call_log_unreferenced(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.log(
@@ -1561,7 +1583,7 @@ class TestLOG013:
         ]
 
     def test_module_call_all_args(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Blending %(fruit)s", {"fruit": fruit})
@@ -1571,7 +1593,7 @@ class TestLOG013:
         assert results == []
 
     def test_module_call_kwarg_all_args(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info({"fruit": fruit}, msg="Blending %(fruit)s")
@@ -1581,7 +1603,7 @@ class TestLOG013:
         assert results == []
 
     def test_module_call_log_kwarg(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.log(logging.INFO, {"fruit": fruit}, msg="Blending %(fruit)s")
@@ -1591,7 +1613,7 @@ class TestLOG013:
         assert results == []
 
     def test_attr_call_missing(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1604,7 +1626,7 @@ class TestLOG013:
         ]
 
     def test_attr_call_unreferenced(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1617,7 +1639,7 @@ class TestLOG013:
         ]
 
     def test_attr_call_log_missing(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1630,7 +1652,7 @@ class TestLOG013:
         ]
 
     def test_attr_call_log_unreferenced(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1647,9 +1669,9 @@ class TestLOG013:
         ]
 
 
-class TestLOG014:
+class TestLOG014(Ignore015):
     def test_module_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Uh oh", exc_info=True)
@@ -1661,7 +1683,7 @@ class TestLOG014:
         ]
 
     def test_module_call_truthy(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Uh oh", exc_info=1)
@@ -1673,7 +1695,7 @@ class TestLOG014:
         ]
 
     def test_module_call_name(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logging.info("Uh oh", exc_info=maybe)
@@ -1683,7 +1705,7 @@ class TestLOG014:
         assert results == []
 
     def test_attr_call(self):
-        results = run(
+        results = self.run(
             """\
             import logging
             logger = logging.getLogger(__name__)
@@ -1693,6 +1715,29 @@ class TestLOG014:
 
         assert results == [
             (3, 21, "LOG014 avoid exc_info=True outside of exception handlers"),
+        ]
+class TestLOG015:
+    def test_root_call(self):
+        results = run(
+            """\
+            import logging
+            logging.info(...)
+            """
+        )
+        assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
+        ]
+    def test_root_call_alias(self):
+        results = run(
+            """\
+            import logging as loglog
+            loglog.info(...)
+            logging = loglog.getLogger(__name__)
+            logging.info(...)
+            """
+        )
+        assert results == [
+            (2, 0, "LOG015 avoid logging calls on root logger"),
         ]
 
 

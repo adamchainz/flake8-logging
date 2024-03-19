@@ -563,3 +563,27 @@ Corrected:
     import logging
 
     logging.warning("Uh oh")
+
+
+LOG015 avoid logging calls on root logger
+-----------------------------------------
+
+Making logging calls directly on the root logger makes it hard to later find the origin when reading logs. You should instead instantiate a logger object with e.g. ``logging.getLogger(__name__)``. If you really do want to interface with the root object you should explicitly use ``logging.root``.
+
+Failing example:
+
+.. code-block:: python
+
+    import logging
+
+    logging.info("hello world")
+
+Corrected:
+
+.. code-block:: python
+
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    logger.info("hello world")
