@@ -36,9 +36,6 @@ urls = {Changelog = "https://github.com/adamchainz/flake8-logging/blob/main/CHAN
 [project.entry-points."flake8.extension"]
 L = "flake8_logging:Plugin"
 
-[tool.black]
-target-version = ['py38']
-
 [tool.isort]
 add_imports = [
     "from __future__ import annotations"
