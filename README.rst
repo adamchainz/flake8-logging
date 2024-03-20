@@ -563,3 +563,41 @@ Corrected:
     import logging
 
     logging.warning("Uh oh")
+
+LOG015 avoid logging calls on the root logger
+---------------------------------------------
+
+Using the root logger means your messages have no source information, making them less useful for debugging.
+It’s better to always create a logger object, normally with:
+
+.. code-block:: python
+
+    logger = logging.getLogger(__name__)
+
+If you really do need the root logger, use ``logging.getLogger(None)``.
+
+This rule detects any call to a logging method directly on the ``logging`` module object.
+
+Failing examples:
+
+.. code-block:: python
+
+    import logging
+
+    logging.info("hello world")
+
+.. code-block:: python
+
+    from logging import info
+
+    info("hello world")
+
+Corrected:
+
+.. code-block:: python
+
+    import logging
+
+    logger = logging.getLogger(__name__)
+
+    logger.info("hello world")

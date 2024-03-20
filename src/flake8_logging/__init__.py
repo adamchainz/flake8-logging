@@ -128,6 +128,7 @@ LOG011 = "LOG011 avoid pre-formatting log messages"
 LOG012 = "LOG012 formatting error: {n} {style} placeholder{ns} but {m} argument{ms}"
 LOG013 = "LOG013 formatting error: {mistake} key{ns}: {keys}"
 LOG014 = "LOG014 avoid exc_info=True outside of exception handlers"
+LOG015 = "LOG015 avoid logging calls on the root logger"
 
 
 class Visitor(ast.NodeVisitor):
@@ -190,6 +191,20 @@ class Visitor(ast.NodeVisitor):
             )
         ) and not self._at_module_level():
             self.errors.append((node.lineno, node.col_offset, LOG001))
+
+        # LOG015
+        if (
+            isinstance(node.func, ast.Attribute)
+            and node.func.attr in logger_methods
+            and isinstance(node.func.value, ast.Name)
+            and self._logging_name
+            and node.func.value.id == self._logging_name
+        ) or (
+            isinstance(node.func, ast.Name)
+            and node.func.id in logger_methods
+            and self._from_imports.get(node.func.id) == "logging"
+        ):
+            self.errors.append((node.lineno, node.col_offset, LOG015))
 
         if (
             self._logging_name

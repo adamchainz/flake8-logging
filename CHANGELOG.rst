@@ -2,6 +2,11 @@
 Changelog
 =========
 
+* Add rule LOG015 that detects use of the root logger through calls like ``logging.info()``.
+
+  Thanks to John Litborn in `PR #96 <https://github.com/adamchainz/flake8-logging/pull/96>`__.
+
+
 1.5.0 (2024-01-23)
 ------------------
 
