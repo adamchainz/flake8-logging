@@ -6,7 +6,6 @@ Changelog
 
   Thanks to John Litborn in `PR #96 <https://github.com/adamchainz/flake8-logging/pull/96>`__.
 
-
 1.5.0 (2024-01-23)
 ------------------
 
