@@ -1727,6 +1727,17 @@ class TestLOG015:
             (2, 0, "LOG015 avoid logging calls on the root logger"),
         ]
 
+    def test_imported_function_call(self):
+        results = run(
+            """\
+            from logging import info
+            info(...)
+            """
+        )
+        assert results == [
+            (2, 0, "LOG015 avoid logging calls on the root logger"),
+        ]
+
     def test_logger_call(self):
         results = run(
             """\

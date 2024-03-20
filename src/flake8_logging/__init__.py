@@ -199,6 +199,10 @@ class Visitor(ast.NodeVisitor):
             and isinstance(node.func.value, ast.Name)
             and self._logging_name
             and node.func.value.id == self._logging_name
+        ) or (
+            isinstance(node.func, ast.Name)
+            and node.func.id in logger_methods
+            and self._from_imports.get(node.func.id) == "logging"
         ):
             self.errors.append((node.lineno, node.col_offset, LOG015))
 

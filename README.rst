@@ -571,20 +571,26 @@ Using the root logger means your messages have no source information, making the
 It’s better to always create a logger object, normally with:
 
 .. code-block:: python
-    
+
     logger = logging.getLogger(__name__)
 
 If you really do need the root logger, use ``logging.getLogger(None)``.
 
 This rule detects any call to a logging method directly on the ``logging`` module object.
 
-Failing example:
+Failing examples:
 
 .. code-block:: python
 
     import logging
 
     logging.info("hello world")
+
+.. code-block:: python
+
+    from logging import info
+
+    info("hello world")
 
 Corrected:
 
