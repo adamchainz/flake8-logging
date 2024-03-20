@@ -128,7 +128,7 @@ LOG011 = "LOG011 avoid pre-formatting log messages"
 LOG012 = "LOG012 formatting error: {n} {style} placeholder{ns} but {m} argument{ms}"
 LOG013 = "LOG013 formatting error: {mistake} key{ns}: {keys}"
 LOG014 = "LOG014 avoid exc_info=True outside of exception handlers"
-LOG015 = "LOG015 avoid logging calls on root logger"
+LOG015 = "LOG015 avoid logging calls on the root logger"
 
 
 class Visitor(ast.NodeVisitor):
