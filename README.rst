@@ -2,7 +2,7 @@
 flake8-logging
 ==============
 
-.. image:: https://img.shields.io/github/actions/workflow/status/adamchainz/flake8-logging/main.yml?branch=main&style=for-the-badge
+.. image:: https://img.shields.io/github/actions/workflow/status/adamchainz/flake8-logging/main.yml.svg?branch=main&style=for-the-badge
    :target: https://github.com/adamchainz/flake8-logging/actions?workflow=CI
 
 .. image:: https://img.shields.io/badge/Coverage-100%25-success?style=for-the-badge
