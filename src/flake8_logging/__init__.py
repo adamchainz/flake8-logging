@@ -427,8 +427,10 @@ class Visitor(ast.NodeVisitor):
                 or (node.func.attr == "log" and (dict_idx := 2))
             )
             and len(node.args) == dict_idx + 1
-            and (dict_node := node.args[dict_idx])
-            and isinstance(dict_node, ast.Dict)
+            and isinstance(
+                (dict_node := node.args[dict_idx]),
+                ast.Dict,
+            )
             and all(
                 isinstance(k, ast.Constant) and isinstance(k.value, str)
                 for k in dict_node.keys
