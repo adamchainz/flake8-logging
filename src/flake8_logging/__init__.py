@@ -250,7 +250,7 @@ class Visitor(ast.NodeVisitor):
                 self.errors.append((node.lineno, node.col_offset, LOG008))
 
             # LOG003
-            extra_keys: Sequence[tuple[str, ast.AST]] = ()
+            extra_keys: Sequence[tuple[str, ast.Constant | ast.keyword]] = ()
             if any((extra_node := kw).arg == "extra" for kw in node.keywords):
                 if isinstance(extra_node.value, ast.Dict):
                     extra_keys = [
@@ -419,7 +419,7 @@ class Visitor(ast.NodeVisitor):
                 break
         return None
 
-    def _check_msg_and_args(self, node: ast.Call, msg_arg: ast.AST, msg: str) -> None:
+    def _check_msg_and_args(self, node: ast.Call, msg_arg: ast.expr, msg: str) -> None:
         assert isinstance(node.func, ast.Attribute)
         if (
             (
