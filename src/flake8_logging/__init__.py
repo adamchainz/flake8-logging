@@ -18,7 +18,7 @@ class Plugin:
     def __init__(self, tree: ast.AST) -> None:
         self._tree = tree
 
-    def run(self) -> Generator[tuple[int, int, str, type[Any]], None, None]:
+    def run(self) -> Generator[tuple[int, int, str, type[Any]]]:
         visitor = Visitor()
         visitor.visit(self._tree)
 
