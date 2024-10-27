@@ -25,7 +25,7 @@ For a brief overview and background, see `the introductory blog post <https://ad
 Requirements
 ============
 
-Python 3.8 to 3.13 supported.
+Python 3.9 to 3.13 supported.
 
 Installation
 ============
