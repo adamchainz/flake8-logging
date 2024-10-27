@@ -3,11 +3,11 @@ from __future__ import annotations
 import ast
 import re
 import sys
+from collections.abc import Generator
+from collections.abc import Sequence
 from functools import lru_cache
 from importlib.metadata import version
 from typing import Any
-from typing import Generator
-from typing import Sequence
 from typing import cast
 
 
@@ -271,16 +271,10 @@ class Visitor(ast.NodeVisitor):
 
             for key, key_node in extra_keys:
                 if key in logrecord_attributes:
-                    if isinstance(key_node, ast.keyword):
-                        lineno, col_offset = keyword_pos(key_node)
-                    else:
-                        lineno = key_node.lineno
-                        col_offset = key_node.col_offset
-
                     self.errors.append(
                         (
-                            lineno,
-                            col_offset,
+                            key_node.lineno,
+                            key_node.col_offset,
                             LOG003.format(repr(key)),
                         )
                     )
@@ -303,7 +297,7 @@ class Visitor(ast.NodeVisitor):
                         and exc_info.value.id == exc_handler.name
                     ):
                         self.errors.append(
-                            (*keyword_pos(exc_info), LOG006),
+                            (exc_info.lineno, exc_info.col_offset, LOG006),
                         )
 
                     # LOG007
@@ -312,7 +306,7 @@ class Visitor(ast.NodeVisitor):
                         and not exc_info.value.value
                     ):
                         self.errors.append(
-                            (*keyword_pos(exc_info), LOG007),
+                            (exc_info.lineno, exc_info.col_offset, LOG007),
                         )
 
             # LOG005
@@ -344,7 +338,7 @@ class Visitor(ast.NodeVisitor):
                 and exc_info.value.value
             ):
                 self.errors.append(
-                    (*keyword_pos(exc_info), LOG014),
+                    (exc_info.lineno, exc_info.col_offset, LOG014),
                 )
 
             # LOG010
@@ -491,17 +485,6 @@ class Visitor(ast.NodeVisitor):
                 )
             )
             return
-
-
-def keyword_pos(node: ast.keyword) -> tuple[int, int]:
-    if sys.version_info >= (3, 9):
-        return (node.lineno, node.col_offset)
-    else:
-        # Educated guess
-        return (
-            node.value.lineno,
-            max(0, node.value.col_offset - 1 - len(node.arg)),
-        )
 
 
 def is_add_chain_with_non_str(node: ast.BinOp) -> bool:
