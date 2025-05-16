@@ -56,7 +56,7 @@ Changelog
 
 * LOG001: Avoid detecting inside function definitions when using ``Logger`` directly.
 
-* Add rule LOG005 that recomends ``exception()`` over ``error()`` within ``except`` clauses.
+* Add rule LOG005 that recommends ``exception()`` over ``error()`` within ``except`` clauses.
 
 * Add rule LOG006 that detects redundant ``exc_info`` arguments in calls to ``exception()``.
 

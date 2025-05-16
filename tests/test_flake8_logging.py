@@ -136,7 +136,7 @@ class TestLOG001:
     def test_direct_aliased(self):
         results = run(
             """\
-            from loggin import Logger as _Logger
+            from logging import Logger as _Logger
             _Logger("x")
             """
         )
