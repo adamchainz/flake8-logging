@@ -3,12 +3,10 @@ from __future__ import annotations
 import ast
 import re
 import sys
-from collections.abc import Generator
-from collections.abc import Sequence
-from functools import lru_cache
+from collections.abc import Generator, Sequence
+from functools import cache
 from importlib.metadata import version
-from typing import Any
-from typing import cast
+from typing import Any, cast
 
 
 class Plugin:
@@ -68,7 +66,7 @@ logrecord_attributes = frozenset(
 )
 
 
-@lru_cache(maxsize=None)
+@cache
 def modpos_placeholder_re() -> re.Pattern[str]:
     # https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
     return re.compile(
@@ -89,7 +87,7 @@ def modpos_placeholder_re() -> re.Pattern[str]:
     )
 
 
-@lru_cache(maxsize=None)
+@cache
 def modnamed_placeholder_re() -> re.Pattern[str]:
     # https://docs.python.org/3/library/stdtypes.html#printf-style-string-formatting
     return re.compile(
@@ -316,9 +314,7 @@ class Visitor(ast.NodeVisitor):
                     if (
                         isinstance(exc_info.value, ast.Constant)
                         and exc_info.value.value
-                    ):
-                        rewritable = True
-                    elif (
+                    ) or (
                         isinstance(exc_info.value, ast.Name)
                         and exc_info.value.id == exc_handler.name
                     ):
