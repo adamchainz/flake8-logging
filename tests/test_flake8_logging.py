@@ -10,8 +10,7 @@ from textwrap import dedent
 
 import pytest
 
-from flake8_logging import Plugin
-from flake8_logging import flatten_str_chain
+from flake8_logging import Plugin, flatten_str_chain
 
 
 @pytest.fixture
