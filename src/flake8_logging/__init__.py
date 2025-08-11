@@ -254,7 +254,7 @@ class Visitor(ast.NodeVisitor):
                     extra_keys = [
                         (k.value, k)
                         for k in extra_node.value.keys
-                        if isinstance(k, ast.Constant)
+                        if isinstance(k, ast.Constant) and isinstance(k.value, str)
                     ]
                 elif (
                     isinstance(extra_node.value, ast.Call)
