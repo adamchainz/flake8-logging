@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import ast
 import re
-import sys
 from collections.abc import Generator, Sequence
 from functools import cache
 from importlib.metadata import version
@@ -152,12 +151,8 @@ class Visitor(ast.NodeVisitor):
         if node.module == "logging":
             for alias in node.names:
                 if alias.name == "WARN":
-                    if sys.version_info >= (3, 10):
-                        lineno = alias.lineno
-                        col_offset = alias.col_offset
-                    else:
-                        lineno = node.lineno
-                        col_offset = node.col_offset
+                    lineno = alias.lineno
+                    col_offset = alias.col_offset
                     self.errors.append((lineno, col_offset, LOG009))
                 if not alias.asname:
                     self._from_imports[alias.name] = node.module
