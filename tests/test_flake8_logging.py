@@ -3,7 +3,6 @@ from __future__ import annotations
 import ast
 import logging
 import re
-import sys
 from functools import partial
 from importlib.metadata import version
 from textwrap import dedent
@@ -890,12 +889,8 @@ class TestLOG009:
             """
         )
 
-        if sys.version_info >= (3, 10):
-            pos = (1, 20)
-        else:
-            pos = (1, 0)
         assert results == [
-            (*pos, "LOG009 WARN is undocumented, use WARNING instead"),
+            (1, 20, "LOG009 WARN is undocumented, use WARNING instead"),
         ]
 
     def test_import_multiline(self):
@@ -907,12 +902,8 @@ class TestLOG009:
             """
         )
 
-        if sys.version_info >= (3, 10):
-            pos = (2, 4)
-        else:
-            pos = (1, 0)
         assert results == [
-            (*pos, "LOG009 WARN is undocumented, use WARNING instead"),
+            (2, 4, "LOG009 WARN is undocumented, use WARNING instead"),
         ]
 
     def test_import_alias(self):
@@ -922,12 +913,8 @@ class TestLOG009:
             """
         )
 
-        if sys.version_info >= (3, 10):
-            pos = (1, 20)
-        else:
-            pos = (1, 0)
         assert results == [
-            (*pos, "LOG009 WARN is undocumented, use WARNING instead"),
+            (1, 20, "LOG009 WARN is undocumented, use WARNING instead"),
         ]
 
 
