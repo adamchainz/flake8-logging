@@ -41,7 +41,7 @@ entry-points."flake8.extension".L = "flake8_logging:Plugin"
 test = [
   "coverage[toml]",
   "flake8",
-  "pytest",
+  "pytest>=9",
   "pytest-flake8-path",
   "pytest-randomly",
 ]
@@ -99,11 +99,7 @@ warn_unreachable = true
 overrides = [ { module = "tests.*", allow_untyped_defs = true } ]
 
 [tool.pytest]
-ini_options.addopts = """\
-    --strict-config
-    --strict-markers
-    """
-ini_options.xfail_strict = true
+strict = true
 
 [tool.coverage]
 run.branch = true

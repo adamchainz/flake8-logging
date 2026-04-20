@@ -179,7 +179,7 @@ requires-dist = [{ name = "flake8", specifier = ">=3,!=3.2" }]
 test = [
     { name = "coverage", extras = ["toml"] },
     { name = "flake8" },
-    { name = "pytest" },
+    { name = "pytest", specifier = ">=9" },
     { name = "pytest-flake8-path" },
     { name = "pytest-randomly" },
 ]
