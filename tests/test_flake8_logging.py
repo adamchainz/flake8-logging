@@ -1736,10 +1736,7 @@ class TestLOG015:
 
 
 class TestLOG016:
-    msg = (
-        "LOG016 formatting error:"
-        " set passed where dict expected"
-    )
+    msg = "LOG016 formatting error: set passed where dict expected"
 
     def test_module_call(self):
         results = run_ignore_log015(
