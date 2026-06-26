@@ -1735,6 +1735,146 @@ class TestLOG015:
         assert results == []
 
 
+class TestLOG016:
+    msg = (
+        "LOG016 formatting error:"
+        " set passed where dict expected"
+    )
+
+    def test_module_call(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.info("Blending %(fruit)s", {"fruit", fruit})
+            """
+        )
+
+        assert results == [
+            (2, 35, self.msg),
+        ]
+
+    def test_attr_call(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s", {"fruit", fruit})
+            """
+        )
+
+        assert results == [
+            (3, 34, self.msg),
+        ]
+
+    def test_module_call_log(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.log(
+                logging.INFO,
+                "Blending %(fruit)s",
+                {"fruit", fruit},
+            )
+            """
+        )
+
+        assert results == [
+            (5, 4, self.msg),
+        ]
+
+    def test_attr_call_log(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.log(
+                logging.INFO,
+                "Blending %(fruit)s",
+                {"fruit", fruit},
+            )
+            """
+        )
+
+        assert results == [
+            (6, 4, self.msg),
+        ]
+
+    def test_multiline(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.info(
+                "Blending %(fruit)s",
+                {"fruit", fruit},
+            )
+            """
+        )
+
+        assert results == [
+            (4, 4, self.msg),
+        ]
+
+    def test_multiple_placeholders(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.info(
+                "Blending %(fruit)s %(colour)s",
+                {"fruit", fruit, "colour", colour},
+            )
+            """
+        )
+
+        assert results == [
+            (4, 4, self.msg),
+        ]
+
+    def test_concat_format_string(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.info(
+                "Blending %(fruit)" + "s",
+                {"fruit", fruit},
+            )
+            """
+        )
+
+        assert results == [
+            (4, 4, self.msg),
+        ]
+
+    def test_positional_placeholder_with_set_arg(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.info("Blending %s", {a, b})
+            """
+        )
+
+        assert results == []
+
+    def test_no_placeholders_with_set_arg(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.info("Blending", {"a", b})
+            """
+        )
+
+        assert results == []
+
+    def test_dict_arg(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.info("Blending %(fruit)s", {"fruit": fruit})
+            """
+        )
+
+        assert results == []
+
+
 class TestFlattenStrChain:
     def run(self, source: str) -> str | None:
         tree = ast.parse(dedent(source))
