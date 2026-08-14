@@ -1324,7 +1324,6 @@ class TestLOG012:
         ]
 
     def test_module_call_modpos_args_0_1(self):
-        # Presume another style is in use
         results = run_ignore_log015(
             """\
             import logging
@@ -1332,7 +1331,33 @@ class TestLOG012:
             """
         )
 
-        assert results == []
+        assert results == [
+            (2, 13, "LOG012 formatting error: 0 % placeholders but 1 argument"),
+        ]
+
+    def test_module_call_modpos_args_0_2(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.error("Test Example.", 42, 43)
+            """
+        )
+
+        assert results == [
+            (2, 14, "LOG012 formatting error: 0 % placeholders but 2 arguments"),
+        ]
+
+    def test_module_call_log_modpos_args_0_1(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.log(logging.INFO, "Blending", fruit)
+            """
+        )
+
+        assert results == [
+            (2, 26, "LOG012 formatting error: 0 % placeholders but 1 argument"),
+        ]
 
     def test_module_call_modpos_args_0_percent(self):
         results = run_ignore_log015(
@@ -1473,6 +1498,19 @@ class TestLOG012:
         )
 
         assert results == []
+
+    def test_attr_call_modpos_args_0_1(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error("Test Example.", 42)
+            """
+        )
+
+        assert results == [
+            (3, 13, "LOG012 formatting error: 0 % placeholders but 1 argument"),
+        ]
 
     def test_attr_call_modpos_args_1_0(self):
         results = run_ignore_log015(

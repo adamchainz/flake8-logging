@@ -461,7 +461,7 @@ class Visitor(ast.NodeVisitor):
         )
         arg_count = len(node.args) - 1 - (node.func.attr == "log")
 
-        if modpos_count > 0 and modpos_count != arg_count:
+        if modpos_count != arg_count:
             self.errors.append(
                 (
                     msg_arg.lineno,
