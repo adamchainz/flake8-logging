@@ -5,6 +5,8 @@ Changelog
 Unreleased
 ----------
 
+* Extend LOG012 to flag extra arguments when the message has no ``%`` placeholders.
+
 * Support Python 3.15.
 
 * Switch package build backend from setuptools to `uv_build <https://docs.astral.sh/uv/concepts/build-backend/>`__.

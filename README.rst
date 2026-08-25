@@ -471,13 +471,17 @@ Additionally, if no arguments are provided, parametrized messages are silently u
     INFO:root:Sent %s to %s
 
 This rule detects mismatches between the number of message parameters and those provided.
-At the moment, it only supports ``%``-style formatting with at least one parameter.
+At the moment, it only supports ``%``-style formatting.
 
 Failing examples:
 
 .. code-block:: python
 
     logging.info("Blending %s")
+
+.. code-block:: python
+
+    logging.info("Blending", fruit)
 
 .. code-block:: python
 
