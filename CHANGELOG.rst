@@ -13,6 +13,9 @@ Unreleased
 
 * Drop Python 3.9 support.
 
+* Add rule LOG016 that detects set literals passed as arguments where a dict
+  is expected for ``%``-style named formatting.
+
 1.8.0 (2025-09-09)
 ------------------
 

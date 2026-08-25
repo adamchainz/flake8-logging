@@ -601,3 +601,46 @@ Corrected:
     logger = logging.getLogger(__name__)
 
     logger.info("hello world")
+
+LOG016 formatting error: set passed where dict expected
+-------------------------------------------------------
+
+When using named ``%``-style formatting, the arguments must be passed as a dict.
+A common typo is writing ``{"key", value}`` (a set literal with a comma) instead of ``{"key": value}`` (a dict literal with a colon).
+Since Python's ``{expr, expr}`` syntax creates a valid set, no syntax error is raised, and the bug only surfaces at runtime when the log statement is actually executed:
+
+.. code-block:: pycon
+
+    >>> logging.error("Hi %(name)s", {"name", "hacker"})
+    --- Logging error ---
+    Traceback (most recent call last):
+      File "/.../logging/__init__.py", line 1160, in emit
+        msg = self.format(record)
+              ^^^^^^^^^^^^^^^^^^^
+    ...
+
+      File "/.../logging/__init__.py", line 392, in getMessage
+        msg = msg % self.args
+              ~~~~^~~~~~~~~~~
+    TypeError: format requires a mapping
+    Call stack:
+      File "<stdin>", line 1, in <module>
+    Message: 'Hi %(name)s'
+    Arguments: ({'hacker', 'name'},)
+
+This will only happen when the logger is enabled since loggers don't perform string formatting when disabled.
+Thus a configuration change can reveal such errors.
+
+This rule detects set literals passed where a dict argument is expected for ``%``-style named formatting.
+
+Failing example:
+
+.. code-block:: python
+
+    logging.info("Blending %(fruit)s", {"fruit", fruit})
+
+Corrected:
+
+.. code-block:: python
+
+    logging.info("Blending %(fruit)s", {"fruit": fruit})
