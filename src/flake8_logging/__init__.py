@@ -126,6 +126,7 @@ LOG012 = "LOG012 formatting error: {n} {style} placeholder{ns} but {m} argument{
 LOG013 = "LOG013 formatting error: {mistake} key{ns}: {keys}"
 LOG014 = "LOG014 avoid exc_info=True outside of exception handlers"
 LOG015 = "LOG015 avoid logging calls on the root logger"
+LOG016 = "LOG016 formatting error: set passed where dict expected"
 
 
 class Visitor(ast.NodeVisitor):
@@ -473,6 +474,28 @@ class Visitor(ast.NodeVisitor):
                         m=arg_count,
                         ms="s" if arg_count != 1 else "",
                     ),
+                )
+            )
+            return
+
+        # LOG016: set literal where dict expected (e.g. {"key", val}
+        # instead of {"key": val}). Checked after LOG013/LOG012
+        # because ast.Set falls through both: it's not ast.Dict, and
+        # named placeholders don't count as positional.
+        if (
+            (
+                (node.func.attr != "log" and (dict_idx := 1))
+                or (node.func.attr == "log" and (dict_idx := 2))
+            )
+            and len(node.args) == dict_idx + 1
+            and isinstance(node.args[dict_idx], ast.Set)
+            and modnamed_placeholder_re().search(msg)
+        ):
+            self.errors.append(
+                (
+                    node.args[dict_idx].lineno,
+                    node.args[dict_idx].col_offset,
+                    LOG016,
                 )
             )
             return
