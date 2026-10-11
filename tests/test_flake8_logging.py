@@ -1735,6 +1735,183 @@ class TestLOG015:
         assert results == []
 
 
+class TestLOG016:
+    def test_module_call(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.info("Blending %(fruit)s", {"fruit", fruit})
+            """
+        )
+
+        assert results == [
+            (
+                2,
+                35,
+                "LOG016 formatting error: set literal passed for named %-style placeholder, not a dict",
+            ),
+        ]
+
+    def test_module_call_log(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logging.log(logging.INFO, "Blending %(fruit)s", {"fruit", fruit})
+            """
+        )
+
+        assert results == [
+            (
+                2,
+                48,
+                "LOG016 formatting error: set literal passed for named %-style placeholder, not a dict",
+            ),
+        ]
+
+    def test_attr_call(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s", {"fruit", fruit})
+            """
+        )
+
+        assert results == [
+            (
+                3,
+                34,
+                "LOG016 formatting error: set literal passed for named %-style placeholder, not a dict",
+            ),
+        ]
+
+    def test_attr_call_log(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.log(logging.INFO, "Blending %(fruit)s", {"fruit", fruit})
+            """
+        )
+
+        assert results == [
+            (
+                3,
+                47,
+                "LOG016 formatting error: set literal passed for named %-style placeholder, not a dict",
+            ),
+        ]
+
+    def test_multiple_placeholders(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s with %(colour)s", {"fruit", "colour"})
+            """
+        )
+
+        assert results == [
+            (
+                3,
+                50,
+                "LOG016 formatting error: set literal passed for named %-style placeholders, not a dict",
+            ),
+        ]
+
+    def test_multiline_call(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info(
+                "Blending %(fruit)s",
+                {"fruit", fruit},
+            )
+            """
+        )
+
+        assert results == [
+            (
+                5,
+                4,
+                "LOG016 formatting error: set literal passed for named %-style placeholder, not a dict",
+            ),
+        ]
+
+    def test_positional_placeholder(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %s", {"fruit", fruit})
+            """
+        )
+
+        assert results == []
+
+    def test_no_placeholder(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending", {"fruit", fruit})
+            """
+        )
+
+        assert results == []
+
+    def test_dict(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s", {"fruit": fruit})
+            """
+        )
+
+        assert results == []
+
+    def test_no_argument(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s")
+            """
+        )
+
+        assert results == []
+
+    def test_extra_keyword_argument(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s", {"fruit", fruit}, extra={"colour": "yellow"})
+            """
+        )
+
+        assert results == [
+            (
+                3,
+                34,
+                "LOG016 formatting error: set literal passed for named %-style placeholder, not a dict",
+            ),
+        ]
+
+    def test_multiple_positional_arguments(self):
+        results = run_ignore_log015(
+            """\
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.info("Blending %(fruit)s", {"fruit", fruit}, colour)
+            """
+        )
+
+        assert results == []
+
+
 class TestFlattenStrChain:
     def run(self, source: str) -> str | None:
         tree = ast.parse(dedent(source))
