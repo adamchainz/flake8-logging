@@ -15,6 +15,10 @@ Unreleased
 
 * Drop Python 3.9 support.
 
+* Add rule LOG016 that detects set literals passed as the argument for named ``%``-style formatting placeholders.
+
+  Thanks to summeriver13 in `PR #200 <https://github.com/adamchainz/flake8-logging/pull/200>`__.
+
 1.8.0 (2025-09-09)
 ------------------
 
