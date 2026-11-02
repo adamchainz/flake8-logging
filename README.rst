@@ -601,3 +601,47 @@ Corrected:
     logger = logging.getLogger(__name__)
 
     logger.info("hello world")
+
+LOG016 formatting error: set literal passed for named ``%``-style placeholders, not a dict
+------------------------------------------------------------------------------------------
+
+When using named ``%``-style formatting, the arguments must be passed as a mapping.
+A common typo is writing a set literal, by using a comma instead of a colon:
+
+.. code-block:: python
+
+    logging.info("Blending %(fruit)s", {"fruit", fruit})
+
+This creates a set, which the logging framework cannot use to fill named placeholders:
+
+.. code-block:: pycon
+
+    >>> logging.info("Blending %(fruit)s", {"fruit", fruit})
+    --- Logging error ---
+    Traceback (most recent call last):
+    ...
+      File "/.../logging/__init__.py", line 400, in getMessage
+        msg = msg % self.args
+              ~~~~^~~~~~~~~~~
+    TypeError: format requires a mapping
+    Call stack:
+    ...
+    Message: 'Blending %(fruit)s'
+    Arguments: ({'fruit', 'pear'},)
+
+This will only happen when the logger is enabled since loggers don’t perform string formatting when disabled.
+Thus a configuration change can reveal such errors.
+
+This rule detects set literals passed as the argument for a message with named ``%``-style placeholders.
+
+Failing example:
+
+.. code-block:: python
+
+    logging.info("Blending %(fruit)s", {"fruit", fruit})
+
+Corrected:
+
+.. code-block:: python
+
+    logging.info("Blending %(fruit)s", {"fruit": fruit})

@@ -126,6 +126,7 @@ LOG012 = "LOG012 formatting error: {n} {style} placeholder{ns} but {m} argument{
 LOG013 = "LOG013 formatting error: {mistake} key{ns}: {keys}"
 LOG014 = "LOG014 avoid exc_info=True outside of exception handlers"
 LOG015 = "LOG015 avoid logging calls on the root logger"
+LOG016 = "LOG016 formatting error: set literal passed for named %-style placeholder{ns}, not a dict"
 
 
 class Visitor(ast.NodeVisitor):
@@ -406,12 +407,9 @@ class Visitor(ast.NodeVisitor):
 
     def _check_msg_and_args(self, node: ast.Call, msg_arg: ast.expr, msg: str) -> None:
         assert isinstance(node.func, ast.Attribute)
+        dict_idx = 2 if node.func.attr == "log" else 1
         if (
-            (
-                (node.func.attr != "log" and (dict_idx := 1))
-                or (node.func.attr == "log" and (dict_idx := 2))
-            )
-            and len(node.args) == dict_idx + 1
+            len(node.args) == dict_idx + 1
             and isinstance(
                 (dict_node := node.args[dict_idx]),
                 ast.Dict,
@@ -452,6 +450,23 @@ class Visitor(ast.NodeVisitor):
                     )
                 )
 
+            return
+
+        # LOG016
+        if (
+            len(node.args) == dict_idx + 1
+            and isinstance(set_node := node.args[dict_idx], ast.Set)
+            and (
+                modnames := {m["name"] for m in modnamed_placeholder_re().finditer(msg)}
+            )
+        ):
+            self.errors.append(
+                (
+                    set_node.lineno,
+                    set_node.col_offset,
+                    LOG016.format(ns="s" if len(modnames) != 1 else ""),
+                )
+            )
             return
 
         modpos_count = sum(
